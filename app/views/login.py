@@ -3,12 +3,6 @@ from app import app
 from app.forms import LoginForm
 from app.utils.validate_creds import creds_validator
 
-@app.route('/')
-def index():
-    if 'username' in session:
-        return redirect(url_for('home'))
-    return redirect(url_for('login'))
-
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -18,10 +12,12 @@ def login():
         username = form.username.data
         password = form.password.data
         # check credentials
-        if username == 'root':
+        if creds_validator(username, password):
             session['username'] = username
-        flash('Login successful')
-        return redirect(url_for('home'))
+            flash('Login successful')
+            return redirect(url_for('home'))
+        else:
+            form.password.errors.append("Invalid username or password")
     else:
         flash('Invalid credentials')
     return render_template('login.html',
@@ -33,9 +29,3 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
-
-
-@app.route('/home', methods = ['GET', 'POST'])
-def home():
-    return render_template('main.html',
-                           title = 'Home')
