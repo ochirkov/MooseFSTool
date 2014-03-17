@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="POST" action="{{ url_for('logout') }}">
+	<input class="btn" type="submit" value="Log out"/>
+</form>
+{% endblock %}

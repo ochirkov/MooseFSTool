@@ -1,26 +1,33 @@
-{% block body %}
-  <form action="" method=post class="form-horizontal">
-    <h2>Sign up for FlaskLogin(Todo) Application </h2>
-    <div class="control-group">
-        <div class="controls">
-          <input type="text" id="username" name="username" class="input-xlarge"
-            placeholder="Enter Username" value="{{ request.form.username }}"
-            required>
-        </div>
-    </div>
- 
-    <div class="control-group">
-        <div class="controls">
-          <input type="password" id="password" name="password" class="input-xlarge"
-            placeholder="Enter Password" value="{{ request.form.password }}"
-            required>
-        </div>
-    </div>
+{% extends 'base.html' %}
+{% block content %}
+{{ form.hidden_tag() }}
+	<form action="{{ url_for('login') }}" method="post">{{ form.csrf_token }}
+		<h2>Sign up for MoosFS admin </h2>
+		<!-- {{ form.errors }} -->
+		{% for field in form if field.widget.input_type != 'hidden' %}
+			<div class="control-group">
+				<div class="controls">
+					{{ field(placeholder='Enter '+field.name,
+							 class='input-xlarge',
+							 required='required') }}
+					{% if field.errors %}
+						<ul class="text-error">
+							{% for error in field.errors %}
+								<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+			</div>
+		{% else %}
+			{{ field }}
+		{% endfor %}
 
-    <div class="control-group">
-        <div class="controls">
-            <button type="submit" class="btn btn-success">Signup</button>
-        </div>
-    </div>
-  </form>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-success">Signup</button>
+				<a href="" class="btn">Cancel</a>
+			</div>
+		</div>
+	</form>
 {% endblock %}
