@@ -1,6 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
-<form method="POST" action="{{ url_for('logout') }}">
-	<input class="btn" type="submit" value="Log out"/>
-</form>
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<a class="brand" href="#">MoosFSTool</a>
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<li class="active"><a href="{{ url_for('home') }}">Home</a></li>
+					<li><a href="">Master</a></li>
+					<li><a href="">Chunk</a></li>
+					<li><a href="">Metalogger</a></li>
+					<li><a href="">Data</a></li>
+					<li><a href="">Trash</a></li>
+				</ul>
+				<form class="navbar-form pull-right" method="POST" action="{{ url_for('logout') }}">
+					<input class="btn" type="submit" value="Log out"/>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
 {% endblock %}
