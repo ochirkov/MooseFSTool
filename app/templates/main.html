@@ -3,15 +3,20 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
-			<a class="brand" href="#">MoosFSTool</a>
+			<a class="brand" href="#">
+				<!-- <img src="{{ url_for('static', filename='img/MooseFS_logo.png') }}" height="30"/> -->
+				MooseFSTool
+			</a>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
-					<li class="active"><a href="{{ url_for('home') }}">Home</a></li>
-					<li><a href="">Master</a></li>
-					<li><a href="">Chunk</a></li>
-					<li><a href="">Metalogger</a></li>
-					<li><a href="">Data</a></li>
-					<li><a href="">Trash</a></li>
+					{% for url, item in [("home", "Home"),
+										 ("master", "Master"),
+										 ("home", "Chunk"),
+										 ("home", "Metalogger"),
+										 ("home", "Data"),
+										 ("home", "Trash")] %}
+						<li {% if title == item %}class="active"{% endif %}><a href="{{ url_for(url) }}">{{ item }}</a></li>
+					{% endfor %}
 				</ul>
 				<form class="navbar-form pull-right" method="POST" action="{{ url_for('logout') }}">
 					<input class="btn" type="submit" value="Log out"/>
@@ -20,5 +25,8 @@
 		</div>
 	</div>
 </div>
-
+<div class="container" style="margin-top: 50px">
+	{% block body %}
+	{% endblock %}
+</div>
 {% endblock %}
