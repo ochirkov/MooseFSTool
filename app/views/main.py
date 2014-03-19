@@ -22,27 +22,26 @@ def home():
                            title = 'Home')
 
 
-def make_tree(path, id=''):
-    tree = dict(id=id, is_dir=True, name=os.path.basename(path), children=[])
+def make_tree(path):
+    tree = dict(id=_set_id(path), is_dir=True,
+                name=os.path.basename(path), full_name=path,
+                children=[])
     try: 
         lst = os.listdir(path)
     except OSError:
         pass #ignore errors
     else:
         for name in lst:
-            id = _set_id()
             fn = os.path.join(path, name)
             if os.path.isdir(fn):
-                tree['children'].append(make_tree(fn, id))
+                tree['children'].append(make_tree(fn))
             else:
                 tree['is_dir'] = False
-                tree['children'].append(dict(id=id, name=name))
+                tree['children'].append(dict(id=_set_id(fn), name=name,
+                                             full_name=fn))
     return tree
 
-import random
-import string
+import hashlib
 
-def _set_id():
-    digits = "".join( [random.choice(string.digits) for i in xrange(8)] )
-    chars = "".join( [random.choice(string.letters) for i in xrange(15)] )
-    return digits + chars
+def _set_id(full_name):
+    return hashlib.md5(full_name).hexdigest()
