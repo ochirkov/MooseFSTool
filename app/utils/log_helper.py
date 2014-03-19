@@ -12,13 +12,7 @@ def config_parser(section):
         config.read('/etc/moosefs_tool/moosefs_tool.ini')
     else:
         config.read(path)
-    if section == 'general':
-        data = dict((x, y) for x, y in config.items('general'))
-    elif section == 'app_wtf':
-        data = dict((x, y) for x, y in config.items('app_wtf'))
-    elif section == 'auth':
-        data = dict((x, y) for x, y in config.items('auth'))
-    return data
+    return dict((x, y) for x, y in config.items(section))
 
 
 def cli_args_parser():
@@ -33,3 +27,4 @@ def cli_args_parser():
 general = config_parser('general')
 app_wtf = config_parser('app_wtf')
 auth = config_parser('auth')
+roots = config_parser('roots')
