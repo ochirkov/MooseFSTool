@@ -10,10 +10,14 @@ import os
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
 def master():
-    configs = get_configs()
-    metafiles = get_metafiles_info()
+    configs_path = roots['configs']
+    configs = get_configs(configs_path)
+    metafiles_path = roots['metafiles']
+    metafiles = get_metafiles_info(metafiles_path)
     return render_template('master.html',
+                           configs_path = configs_path,
                            configs = configs,
+                           metafiles_path = metafiles_path,
                            metafiles = metafiles,
                            title = 'Master')
 
