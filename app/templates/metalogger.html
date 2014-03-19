@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+{% block body %}
+
+<h3>Meta info: </h3>
+    <table class="table">
+		{% for file in fileslist %}
+			<tr>
+				<td><strong>{{ file.name }}</strong></td>
+				<td>{{ file.mode }}</td>
+			</tr>
+		{% endfor %}
+    </table>
+
+{% endblock %}

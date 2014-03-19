@@ -12,7 +12,7 @@
 					{% for url, item in [("home", "Home"),
 										 ("master", "Master"),
 										 ("home", "Chunk"),
-										 ("home", "Metalogger"),
+										 ("metalogger", "Metalogger"),
 										 ("home", "Data"),
 										 ("home", "Trash")] %}
 						<li {% if title == item %}class="active"{% endif %}><a href="{{ url_for(url) }}">{{ item }}</a></li>
