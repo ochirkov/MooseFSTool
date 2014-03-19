@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+{% block body %}
+
+<h1>{{ tree.name }}</h1>
+<ul class="tree">
+	{% for item in tree.children recursive %}
+	    <li>
+	    	{% if item.children %}
+	    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" data-toggle="collapse" data-target="#{{ item.id }}" class="non-decorated collapsed">
+	    			<img src="{{ url_for('static', filename='img/plus_small.png') }}"/>
+	    			{{ item.name }}
+	    		</a>
+		        <div id="{{ item.id }}" class="collapse"><ul class="tree">{{ loop(item.children) }}</ul></div>
+		    {% else %}
+		    	{% if item.is_dir %}
+		    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" class="non-decorated">
+		    			{{ item.name }}
+		    		</a>
+		    	{% else %}
+		    		{{ item.name }}
+		    	{% endif %}
+		    {% endif %}
+	    </li>
+	{% endfor %}
+</ul>
+
+{% endblock %}
