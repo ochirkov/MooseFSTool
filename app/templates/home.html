@@ -38,7 +38,7 @@ function open_folder(event, id) {
 		    		</a>
 		    	{% else %}
 		    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" class="non-decorated">
-						<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin-left: 13px;"/>
+						<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
 		    			{{ item.name }}
 		    		</a>
 		    	{% endif %}
