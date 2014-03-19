@@ -14,9 +14,11 @@ def index():
 @app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def home():
-    tree = make_tree('/usr/local')
+    path = '/usr/local'
+    tree = make_tree(path)
     return render_template('home.html',
                            tree = tree,
+                           path = path,
                            title = 'Home')
 
 

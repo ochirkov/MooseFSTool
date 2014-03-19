@@ -56,5 +56,6 @@ ul.tree {
 }
 
 a.non-decorated {
+	color : black !important;
 	text-decoration : none !important;
 }
