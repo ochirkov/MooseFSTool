@@ -8,36 +8,32 @@ import os
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
 def master():
-    path = "/etc/mfs"
     fileslist = [
-                 "mfsexports.cfg", 
-                 "mfstopology.cfg",
-                 "mfsmaster.cfg"
+                 ("mfsexports", "mfsexports.cfg"), 
+                 ("mfstopology", "mfstopology.cfg"),
+                 ("mfsmaster", "mfsmaster.cfg")
                  ]
     lst = []
     for file in fileslist:
-        lst.append(os.path.join(path, file))
+        lst.append(file)
     return render_template('master.html',
                            fileslist = lst,
                            title = 'Master')
 
 
-@app.route('/config_editor', methods = ['GET', 'POST'])
+@app.route('/config_editor/<config_name>', methods = ['GET', 'POST'])
 @login_required
-def config_editor():
-    if request.method == "POST":
-        if 'content' not in request.form:
-            filename = request.form['filename']
-            with open(filename, 'r') as f:
-                content = f.read()
-        else:
-            filename = request.form['filename']
-            with open(filename, 'w') as f:
-                f.write(request.form['content'])
-            return redirect('master')
-        return render_template('config_editor.html',
-                               filename = filename,
-                               filecontent = content,
-                               title = 'Master')
-    else:
+def config_editor(config_name):
+    path = "/etc/mfs"
+    filename = os.path.join(path, config_name + '.cfg')
+    if request.method == 'POST':
+        with open(filename, 'w') as f:
+            f.write(request.form['content'])
         return redirect('master')
+    
+    with open(filename, 'r') as f:
+        content = f.read()
+    return render_template('config_editor.html',
+                           filename = filename,
+                           filecontent = content,
+                           title = 'Master')

@@ -4,9 +4,6 @@
 <h3>Choose config file: </h3>
 
 	{% for file in fileslist %}
-		<form method="POST" action="{{ url_for('config_editor') }}" id="{{ loop.index }}_form">
-			<input type="hidden" name="filename" value="{{ file }}"/>
-			<a href="#" onclick="$('#' + '{{ loop.index }}' + '_form').submit()">{{ file }}</a>
-		</form>
+		<a href="{{ url_for('config_editor', config_name=file.0) }}">{{ file.1 }}</a><br/>
 	{% endfor %}
 {% endblock %}
