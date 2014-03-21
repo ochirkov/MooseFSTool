@@ -15,7 +15,7 @@ def login():
         if creds_validator(username, password):
             session['username'] = username
             flash('Login successful')
-            return redirect(url_for('home'))
+            return redirect(request.form['next_url'])
         else:
             form.password.errors.append("Invalid username or password")
     else:
