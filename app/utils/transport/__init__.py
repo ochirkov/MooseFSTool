@@ -60,9 +60,9 @@ class Connect(object):
         return sftp
 
 
-    def get_file(self, path, flag):
+    def get_file(self, path, mode):
 
-        file_o = self.remote.file(path, flag)
+        file_o = self.remote.file(path, mode)
 
         return file_o
 
