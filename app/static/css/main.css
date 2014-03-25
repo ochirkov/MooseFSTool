@@ -59,3 +59,11 @@ a.non-decorated {
 	color : black !important;
 	text-decoration : none !important;
 }
+div.info {
+	padding: 5px;
+    width: auto; height: auto; /* Размеры */
+    background: #f5f5f5; /* Цвет фона */
+    border: 3px solid #fff; /* Белая рамка */
+    border-radius: 10px; /* Радиус скругления */
+    display: inline-block;
+   }
