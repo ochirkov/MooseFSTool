@@ -1,9 +1,10 @@
-from flask import render_template, redirect, request, url_for
+from flask import render_template, redirect, request, url_for, jsonify
 from app import app
 from app.forms import LoginForm
 from app.decorators import login_required
 
 import os
+import ast
 
 @app.route('/')
 @login_required
@@ -16,11 +17,32 @@ def index():
 def home():
     path = '/usr/local'
     tree = make_tree(path)
+    if request.method == "POST":
+        action = request.values['action']
+        data = ''
+        if action == 'mfsfileinfo':
+            data = 'mfsfileinfo'
+        elif action == 'mfscheckfile':
+            data = 'mfscheckfile'
+        elif action == 'mfsdirinfo':
+            data = 'mfsdirinfo'
+        return render_template('getinfo.html',
+                               full_name = request.values['full_name'],
+                               is_dir = request.values['is_dir'],
+                               action = action,
+                               data = data
+                               )
     return render_template('home.html',
                            tree = tree,
                            path = path,
                            title = 'Home')
 
+
+@app.route('/home/getinfo/<file_id>', methods = ['GET', 'POST'])
+@login_required
+def get_info(file_id):
+    return render_template('getinfo.html',
+                           file_id=file_id)
 
 def make_tree(path):
     tree = dict(id=_set_id(path), is_dir=True,
