@@ -1,3 +1,25 @@
+<script>
+$(document).ready(function() 
+    { 
+        $("#metaTable").tablesorter({
+        	sortList: [[0,0]]
+        }); 
+    } 
+); 
+
+function edit_request(event, config_name) {
+	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
+	$.post("", {
+		config_name : config_name,
+		action : 'edit',
+        csrfmiddlewaretoken: getCookie('csrftoken'),
+        },function(data) {
+            $('#id_content').html(data);
+        }
+	);
+}
+</script>
+{{ host }}
 <h3>Config files: </h3>
 {% if configs %}
 	<table class="table" style="width:250px;">

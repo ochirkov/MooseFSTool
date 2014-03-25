@@ -7,4 +7,4 @@ app.config['CSRF_ENABLED'] = app_wtf['csrf_enabled']
 app.config['SECRET_KEY'] = app_wtf['secret_key']
 
 
-from app.views import main, login, master, metalogger
+from app.views import main, login, master, metalogger, chunk

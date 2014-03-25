@@ -2,7 +2,7 @@
 	function confirm_save(event, config_name) {
 		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
 	    var content = $('#id_config_text').val()
-	    var c=confirm("Do you realy wont to save file {{ filename }}?");
+	    var c=confirm("Do you realy want to save file {{ filename }}?");
 	    if (c == true) {
 			$.post("", {
 		        config_name : config_name,
