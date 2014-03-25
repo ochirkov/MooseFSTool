@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+{% block body %}
+	<script>
+	$(document).ready(function() 
+	    { 
+	        $("#metaTable").tablesorter({
+	        	sortList: [[0,0]]
+	        }); 
+	    } 
+	); 
+	
+	function edit_request(event, config_name) {
+		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
+		$.post("", {
+			config_name : config_name,
+			action : 'edit',
+	        csrfmiddlewaretoken: getCookie('csrftoken'),
+	        },function(data) {
+	            $('#id_content').html(data);
+	        }
+		);
+	}
+	</script>
+	
+	<div id="id_content">
+		{% include 'master/files_info.html' %}
+	</div>
+{% endblock %}

@@ -2,19 +2,6 @@ import os
 import time
 import datetime
 
-def get_configs(path):
-    config_files = [
-                    "mfsexports.cfg", 
-                    "mfstopology.cfg",
-                    "mfsmaster.cfg"
-                 ]
-    result = []
-    for file in config_files:
-        if os.path.exists(os.path.join(path, file)):
-            result.append((file.split('.')[0], file))
-    
-    return result
-
 
 def get_metafiles_info(path):
     lst = []
