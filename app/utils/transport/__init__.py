@@ -4,8 +4,8 @@ from app.utils.log_helper import remote_auth
 class Connect(object):
 
     '''
-    Connect class provides SSH connect via Paramiko module. Connection could init via login/pwd, key/pwd or just key.
-    Once you've create Connect object you can get ssh connect to remote machine
+    Connect class provides SSH connect via Paramiko module. Connection could init via login/pwd, key/pwd or 
+    key without pwd. Once you've created Connect object you can get ssh connect to remote machine
     and sftp connection. It also provides remote file interface.
 
     >>> obj = Connect('127.0.0.1')  # Init object
@@ -24,8 +24,8 @@ class Connect(object):
         self.user = user
         self.password = password
         self.private_key_file = private_key_file
-        self.remote_auth_type = remote_auth['auth_type']
-        self.remote_auth_passwd = remote_auth['passwd']
+        self.remote_auth_type = remote_auth.get('auth_type')
+        self.remote_auth_passwd = remote_auth.get('passwd')
         self.ssh = self.connect()
         self.remote = self._sftp_connect()
 
@@ -35,12 +35,11 @@ class Connect(object):
             ssh_client.connect(self.host, username=self.user, password=self.password)
 
         elif self.remote_auth_type == 'key':
-            if not self.remote_auth_passwd:
-                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
-
-            elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
+            if self.remote_auth_passwd:
                 ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
                                    password=self.password)
+            else:
+                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
 
         return ssh_client
 
