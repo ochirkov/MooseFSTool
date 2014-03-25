@@ -7,4 +7,8 @@
 		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfsfileinfo', false)" class="btn btn-success {% if action == 'mfsfileinfo' %}active{% endif %}">mfsfileinfo</button>
 	{% endif %}
 </div><br/>
-{{ data }}
+{% if data %}
+	<div class="info">
+		{{ data }}
+	</div>
+{% endif %}
