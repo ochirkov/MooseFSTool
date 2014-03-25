@@ -4,6 +4,8 @@ from app.forms import LoginForm
 from app.decorators import login_required
 from app.utils.files_info import get_configs, edit_config, save_config, get_metafiles_info
 from app.utils.log_helper import roots
+from app.utils.moose_lib import MooseFS
+from collections import OrderedDict
 
 import os
 
@@ -25,5 +27,21 @@ def master():
                            configs = configs,
                            metafiles_path = metafiles_path,
                            metafiles = metafiles,
-                           host = host,
+                           base_info = get_master_info(host),
                            title = 'Master')
+
+
+def get_master_info(host, port=9421):
+    error = ''
+    version = '0.0.0'
+    try:
+        mfs = MooseFS(masterhost=host,
+                      masterport=port)
+        version = mfs.masterversion
+    except Exception as e:
+        error = 'Error while trying to connect to %s:%s<br/>%s' % (host, port, e)
+    return OrderedDict({'Host' : host,
+                        'Port' : port,
+                        'Version' : version,
+                        'Error' : error})
+    

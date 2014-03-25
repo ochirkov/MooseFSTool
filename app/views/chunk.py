@@ -21,5 +21,5 @@ def chunk():
                            configs = configs,
                            metafiles_path = metafiles_path,
                            metafiles = metafiles,
-                           host = host,
+                           base_info = {},
                            title = 'Chunk')
