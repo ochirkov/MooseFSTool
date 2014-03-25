@@ -3,8 +3,8 @@
 	{% if is_dir == 'true' %}
 		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfsdirinfo', true)"class="btn btn-success {% if action == 'mfsdirinfo' %}active{% endif %}">mfsdirinfo</button>
 	{% else %}
-		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfscheckfile', false)" class="btn btn-success {% if action == 'mfscheckfile' %}active{% endif %}">mfscheckfile</button>
 		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfsfileinfo', false)" class="btn btn-success {% if action == 'mfsfileinfo' %}active{% endif %}">mfsfileinfo</button>
+		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfscheckfile', false)" class="btn btn-success {% if action == 'mfscheckfile' %}active{% endif %}">mfscheckfile</button>
 	{% endif %}
 </div><br/>
 {% if data %}
