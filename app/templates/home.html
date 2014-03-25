@@ -1,0 +1,50 @@
+{% extends 'main.html' %}
+{% block body %}
+
+<script>
+function open_folder(event, id) {
+	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
+	$("#" + id).collapse('toggle')
+	
+	if ($('#' + id).hasClass('in')) {
+    	$("#" + id + "_img_plus").addClass('hidden')
+    	$("#" + id + "_img_minus").removeClass('hidden')
+	}
+	else {
+    	$("#" + id + "_img_minus").addClass('hidden')
+    	$("#" + id + "_img_plus").removeClass('hidden')
+	}
+	
+}
+</script>
+
+<h3>{{ path }}</h3>
+<ul class="tree">
+	{% for item in tree.children recursive %}
+	    <li>
+	    	{% if item.children %}
+	    		<a href="#" onclick="open_folder(event, '{{ item.id }}')" class="non-decorated collapsed">
+	    			<img id="{{ item.id }}_img_plus" src="{{ url_for('static', filename='img/tree/small-plus.png') }}"/>
+	    			<img id="{{ item.id }}_img_minus" class="hidden" src="{{ url_for('static', filename='img/tree/small-minus.png') }}"/>
+	    			<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}"/>
+	    			{{ item.name }}
+	    		</a>
+		        <div id="{{ item.id }}" class="collapse"><ul class="tree">{{ loop(item.children) }}</ul></div>
+		    {% else %}
+		    	{% if item.is_dir %}
+		    		<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}" style="margin-left: 13px;"/>
+		    		<a href="#" onclick="open_folder(event, '{{ item.id }}')" class="non-decorated">
+		    			{{ item.name }}
+		    		</a>
+		    	{% else %}
+		    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" class="non-decorated">
+						<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
+		    			{{ item.name }}
+		    		</a>
+		    	{% endif %}
+		    {% endif %}
+	    </li>
+	{% endfor %}
+</ul>
+
+{% endblock %}

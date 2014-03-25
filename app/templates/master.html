@@ -10,38 +10,48 @@ $(document).ready(function()
 ); 
 </script>
 <h3>Config files: </h3>
-	<table class="table" style="width:250px;">
-	{% for file in configs %}
-		<tr>
-			<td><strong>{{ file.1 }}</strong></td>
-			<td><a href="{{ url_for('config_editor', config_name=file.0) }}" class="btn btn-mini"><i class="icon-edit"></i> Edit</a></td>
-		</tr>
-	{% endfor %}
-	</table>
+	{% if configs %}
+		<table class="table" style="width:250px;">
+		{% for file in configs %}
+			<tr>
+				<td><strong>{{ file.1 }}</strong></td>
+				<td><a href="{{ url_for('config_editor', config_name=file.0) }}" class="btn btn-mini"><i class="icon-edit"></i> Edit</a></td>
+			</tr>
+		{% endfor %}
+		</table>
+	{% else %}
+		<div class="alert alert-error">There are no config files in {{ configs_path }}.<br/>
+			Please check "configs" option in /etc/moosefs_tool/moosefs_tool.ini</div>
+	{% endif %}
 <hr/>
 
 <h3>Metafiles: </h3>
-    <table class="table zebra-striped" id="metaTable" style="cursor: hand">
-    	<thead>
-	    	<tr>
-	    		<th>Name</th>
-	    		<th>Mode</th>
-	    		<th>Size</th>
-	    		<th>Access</th>
-	    		<th>Modify</th>
-	    		<th>Change</th>
-	    	</tr>
-    	</thead>
-		{% for file in metafiles %}
-			<tr>
-				<td><strong>{{ file.name }}</strong></td>
-				<td>{{ file.mode }}</td>
-				<td>{{ file.size }}</td>
-				<td>{{ file.atime }}</td>
-				<td>{{ file.mtime }}</td>
-				<td>{{ file.ctime }}</td>
-			</tr>
-		{% endfor %}
-    </table>
-
+	{% if metafiles %}
+	    <table class="table zebra-striped" id="metaTable" style="cursor: hand">
+	    	<thead>
+		    	<tr>
+		    		<th>Name</th>
+		    		<th>Mode</th>
+		    		<th>Size</th>
+		    		<th>Access</th>
+		    		<th>Modify</th>
+		    		<th>Change</th>
+		    	</tr>
+	    	</thead>
+			{% for file in metafiles %}
+				<tr>
+					<td><strong>{{ file.name }}</strong></td>
+					<td>{{ file.mode }}</td>
+					<td>{{ file.size }}</td>
+					<td>{{ file.atime }}</td>
+					<td>{{ file.mtime }}</td>
+					<td>{{ file.ctime }}</td>
+				</tr>
+			{% endfor %}
+	    </table>
+	{% else %}
+		<div class="alert alert-error">You have no metafiles in {{ metafiles_path }}<br/>
+			Please check "metafiles" option in /etc/moosefs_tool/moosefs_tool.ini
+		</div>
+	{% endif %}
 {% endblock %}

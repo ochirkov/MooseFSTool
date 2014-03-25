@@ -48,3 +48,14 @@ table .headerSortUp:after{
 	-moz-opacity:0.6;
 	opacity:0.6;
 }
+
+ul.tree {
+	display: block;
+	list-style: none;
+	text-decoration: none
+}
+
+a.non-decorated {
+	color : black !important;
+	text-decoration : none !important;
+}
