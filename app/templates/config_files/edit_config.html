@@ -16,8 +16,15 @@
 		}
 		
 	}
+	function confirm_cancel(event) {
+		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
+		var c=confirm("Do you realy want to discard changes in {{ filename }}? All shanges will be lost!");
+	    if (c == true) {
+	    	window.location.reload()
+	    }
+	}
 </script>
 <h5>{{ filename }}</h5>
 <textarea id="id_config_text" style="width: 600px; height: 500px;" name="content">{{ filecontent }}</textarea><br/>
 <a href="#" class="btn btn-success" onclick="confirm_save(event, '{{ filename }}')">Save</a>
-<a href="" class="btn">Cancel</a>
+<a href="#" onclick="confirm_cancel(event)" class="btn">Cancel</a>

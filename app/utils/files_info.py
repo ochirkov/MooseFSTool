@@ -18,7 +18,7 @@ def get_configs(host, path):
         try:
             f = con.get_file(os.path.join(path, file), 'r')
         except:
-            pass
+            result.append(file + '- missing')
         else:
             result.append(file)
     
