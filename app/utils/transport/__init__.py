@@ -1,5 +1,6 @@
 from app.utils.config_helper import remote_auth
 from app.utils import errors
+from app.utils import logger
 
 try:
     import paramiko
@@ -61,7 +62,7 @@ class Connect(object):
                                        password=self.password)
         except Exception, e:
             msg = 'Error during ssh client connect: %s' % str(e)
-            # add logging
+            logger.error(e)
             raise errors.MooseConnectionFailed(msg)
 
         return ssh_client
@@ -92,8 +93,8 @@ class Connect(object):
 
         except Exception, e:
             msg = "Failed to open sftp session: %s" % str(e)
+            logger.error(e)
             raise errors.MooseConnectionFailed(msg)
-
         return sftp
 
 
@@ -110,6 +111,7 @@ class Connect(object):
 
         except IOError, e:
             msg = "Failed to open remote file: %s" % str(e)
+            logger.error(e)
             raise errors.MooseConnectionFailed(msg)
         return file_o
 
