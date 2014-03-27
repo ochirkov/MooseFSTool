@@ -13,6 +13,7 @@ import os
 @login_required
 def master():
     host = roots['master_host']
+    port = roots.get('master_port', 9421)
     configs_path = roots['configs']
     if request.method == 'POST':
         action = request.values['action'] # save or edit
@@ -27,11 +28,11 @@ def master():
                            configs = configs,
                            metafiles_path = metafiles_path,
                            metafiles = metafiles,
-                           base_info = get_master_info(host),
+                           base_info = get_master_info(host, port),
                            title = 'Master')
 
 
-def get_master_info(host, port=9421):
+def get_master_info(host, port):
     error = ''
     version = '0.0.0'
     try:

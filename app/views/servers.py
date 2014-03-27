@@ -11,7 +11,7 @@ import os
 @login_required
 def servers():
     host = roots['master_host']
-    port = roots['master_port']
+    port = roots.get('master_port', 9421)
     servers = []
     try:
         mfs = MooseFS(masterhost=host,
