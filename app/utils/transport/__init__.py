@@ -1,5 +1,12 @@
-import paramiko
-from app.utils.log_helper import remote_auth
+from app.utils.config_helper import remote_auth
+from app.utils import errors
+from app.utils import logger
+
+try:
+    import paramiko
+except ImportError:
+        pass
+
 
 class Connect(object):
 
@@ -14,11 +21,17 @@ class Connect(object):
     >>> obj.get_file('path_to_file', 'r')  # Will get you remote file object
     >>> obj.ssh_close()  # Close ssh session
     >>> obj.remote_close()  # Close sftp session
+    >>> obj.remote_command('ls -l', 'stdout')  # Execute command on remote host and return code/stdout
     '''
 
     def __init__(self, host, user=remote_auth.get('user'), password=remote_auth.get('passwd', None),
                  private_key_file=remote_auth.get('key',None), port=22):
 
+        """
+        Init Connect object. Init method understands both ip address and hostname of remote host.
+        >>> obj = Connect('127.0.0.1')
+        >>> obj = Connect('mfsmaster')
+        """
         self.host = host
         self.port = port
         self.user = user
@@ -31,21 +44,36 @@ class Connect(object):
 
     def _connect(self, ssh_client):
 
-        if self.remote_auth_type == 'pwd':
-            ssh_client.connect(self.host, username=self.user, password=self.password)
+        """
+        Helper for connect method. According to __init__ arguments (auth type, login, pwd) return appropriate
+        ssh connection.
+        >>> obj._connect(ssh_client)
+        """
+        try:
+            if self.remote_auth_type == 'pwd':
+                ssh_client.connect(self.host, username=self.user, password=self.password)
 
-        elif self.remote_auth_type == 'key':
-            if not self.remote_auth_passwd:
-                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
+            elif self.remote_auth_type == 'key':
+                if not self.remote_auth_passwd:
+                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
 
-            elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
-                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
-                                   password=self.password)
+                elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
+                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
+                                       password=self.password)
+        except Exception, e:
+            msg = 'Error during ssh client connect: %s' % str(e)
+            logger.error(e)
+            raise errors.MooseConnectionFailed(msg)
 
         return ssh_client
 
 
     def connect(self):
+
+        """
+        connect method call _connect and pass him ssh_client. It returns ssh connection with remote host.
+        >>> obj.connect()
+        """
 
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -55,24 +83,67 @@ class Connect(object):
 
     def _sftp_connect(self):
 
-        sftp = self.ssh.open_sftp()
+        """
+        Helper method. It initialize sftp connection with remote host.
+        >>> obj._sftp_connect()
+        """
 
+        try:
+            sftp = self.ssh.open_sftp()
+
+        except Exception, e:
+            msg = "Failed to open sftp session: %s" % str(e)
+            logger.error(e)
+            raise errors.MooseConnectionFailed(msg)
         return sftp
 
 
     def get_file(self, path, mode):
 
-        file_o = self.remote.file(path, mode)
+        """
+        Return file object related with remote file. Method takes path to the file and mode args.
+        >>> obj.get_file('/etc/mfs/mfshdd.cfg', 'w')
+        >>> obj.get_file('/etc/mfs/mfshdd.cfg', 'rb')
+        """
 
+        try:
+            file_o = self.remote.file(path, mode)
+
+        except IOError, e:
+            msg = "Failed to open remote file: %s" % str(e)
+            logger.error(e)
+            raise errors.MooseConnectionFailed(msg)
         return file_o
+
+
+    def remote_command(self, cmd, return_value='code'):
+
+        """
+        Executes command on remote host via ssh, wait till command will finish work and return code/stdout.
+        >>> obj.remote_command('ls -l', 'code')
+        >>> obj.remote_command('ls -l', 'stdout')
+        """
+
+        ssh_client = self.ssh
+        stdin, stdout, stderr = ssh_client.exec_command(cmd)
+
+        if return_value == 'code':
+            return stdout.channel.recv_exit_status()
+        elif return_value == 'stdout':
+            return stdout.readlines()
 
 
     def ssh_close(self):
 
+        """
+        Close ssh session with remote host.
+        """
         self.ssh.close()
 
 
     def remote_close(self):
 
-        self.remote.close()
+        """
+        Close sftp session with remote host.
+        """
 
