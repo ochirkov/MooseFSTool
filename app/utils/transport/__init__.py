@@ -14,6 +14,7 @@ class Connect(object):
     >>> obj.get_file('path_to_file', 'r')  # Will get you remote file object
     >>> obj.ssh_close()  # Close ssh session
     >>> obj.remote_close()  # Close sftp session
+    >>> obj.remote_command('ls -l', 'stdout')  # Execute command on remote host and return code/stdout
     '''
 
     def __init__(self, host, user=remote_auth.get('user'), password=remote_auth.get('passwd', None),
@@ -76,3 +77,12 @@ class Connect(object):
 
         self.remote.close()
 
+    def remote_command(self, cmd, return_value='code'):
+
+        ssh_client = self.ssh
+        stdin, stdout, stderr = ssh_client.exec_command(cmd)
+
+        if return_value == 'code':
+            return stdout.channel.recv_exit_status()
+        elif return_value == 'stdout':
+            return stdout.readlines()
