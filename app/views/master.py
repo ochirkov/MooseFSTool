@@ -3,7 +3,7 @@ from app import app
 from app.forms import LoginForm
 from app.decorators import login_required
 from app.utils.files_info import get_configs, get_metafiles_info
-from app.utils.log_helper import roots
+from app.utils.config_helper import roots
 
 import os
 

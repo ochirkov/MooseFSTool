@@ -1,5 +1,5 @@
 from flask import Flask
-from app.utils.log_helper import app_wtf, general
+from app.utils.config_helper import app_wtf, general
 
 app = Flask(__name__)
 

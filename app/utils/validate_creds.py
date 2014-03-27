@@ -1,4 +1,4 @@
-from app.utils.log_helper import auth
+from app.utils.config_helper import auth
 import crypt
 
 def creds_validator(username, password):
