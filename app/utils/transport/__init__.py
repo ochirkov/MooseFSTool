@@ -1,5 +1,11 @@
-import paramiko
 from app.utils.log_helper import remote_auth
+from app.utils import errors
+
+try:
+    import paramiko
+except ImportError:
+        pass
+
 
 class Connect(object):
 
@@ -42,17 +48,21 @@ class Connect(object):
         ssh connection.
         >>> obj._connect(ssh_client)
         """
+        try:
+            if self.remote_auth_type == 'pwd':
+                ssh_client.connect(self.host, username=self.user, password=self.password)
 
-        if self.remote_auth_type == 'pwd':
-            ssh_client.connect(self.host, username=self.user, password=self.password)
+            elif self.remote_auth_type == 'key':
+                if not self.remote_auth_passwd:
+                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
 
-        elif self.remote_auth_type == 'key':
-            if not self.remote_auth_passwd:
-                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
-
-            elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
-                ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
-                                   password=self.password)
+                elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
+                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
+                                       password=self.password)
+        except Exception, e:
+            msg = 'Error during ssh client connect: %s' % str(e)
+            # add logging
+            raise errors.MooseConnectionFailed(msg)
 
         return ssh_client
 
@@ -77,7 +87,12 @@ class Connect(object):
         >>> obj._sftp_connect()
         """
 
-        sftp = self.ssh.open_sftp()
+        try:
+            sftp = self.ssh.open_sftp()
+
+        except Exception, e:
+            msg = "Failed to open sftp session: %s" % str(e)
+            raise errors.MooseConnectionFailed(msg)
 
         return sftp
 
@@ -90,8 +105,12 @@ class Connect(object):
         >>> obj.get_file('/etc/mfs/mfshdd.cfg', 'rb')
         """
 
-        file_o = self.remote.file(path, mode)
+        try:
+            file_o = self.remote.file(path, mode)
 
+        except IOError, e:
+            msg = "Failed to open remote file: %s" % str(e)
+            raise errors.MooseConnectionFailed(msg)
         return file_o
 
 
