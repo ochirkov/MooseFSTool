@@ -22,7 +22,7 @@ function edit_request(event, config_name) {
 <div class="row-fluid">
 	<div class="span4">
 	<h3>{{ title }} info </h3>
-	{% if not base_info.error %}
+	{% if not base_info.Error %}
 		<table class="table">
 			{% for k, v in base_info.iteritems() if k != 'Error' %}
 				<tr>
@@ -33,19 +33,26 @@ function edit_request(event, config_name) {
 		</table>
 	{% else %}
 		<div class="alert alert-error">
-			{{ base_info.error|safe }}
+			{{ base_info.Error|safe }}
 		</div>
 	{% endif %}
 	</div>
 	<div class="span8">
-		<h3>Config files: </h3>
+		<h3>Config files ({{ configs_path }}): </h3>
 		{% if configs %}
 			<table class="table" style="width:250px;">
 			{% for file in configs %}
-				<tr>
-					<td><strong>{{ file }}</strong></td>
-					<td><a href="#" onclick="edit_request(event, '{{ file }}')" class="btn btn-mini"><i class="icon-edit"></i> Edit</a></td>
-				</tr>
+				{% if not 'missing' in file %}
+					<tr>
+						<td><strong>{{ file }}</strong></td>
+						<td><a href="#" onclick="edit_request(event, '{{ file }}')" class="btn btn-mini"><i class="icon-edit"></i> Edit</a></td>
+					</tr>
+				{% else %}
+					<tr>
+						<td><strong style="color:red">{{ file }}</strong></td>
+						<td></td>
+					</tr>
+				{% endif %}
 			{% endfor %}
 			</table>
 		{% else %}
@@ -58,7 +65,7 @@ function edit_request(event, config_name) {
 	<div class="span12">
 		<hr/>
 
-		<h3>Metafiles: </h3>
+		<h3>Metafiles ({{ metafiles_path }}): </h3>
 		{% if metafiles %}
 		    <table class="table zebra-striped" id="metaTable" style="cursor: hand">
 		    	<thead>
