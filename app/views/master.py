@@ -3,7 +3,7 @@ from app import app
 from app.forms import LoginForm
 from app.decorators import login_required
 from app.utils.files_info import get_configs, edit_config, save_config, get_metafiles_info
-from app.utils.log_helper import roots
+from app.utils.config_helper import roots
 from app.utils.moose_lib import MooseFS
 from collections import OrderedDict
 
@@ -37,7 +37,7 @@ def get_master_info(host, port):
     version = '0.0.0'
     try:
         mfs = MooseFS(masterhost=host,
-                      masterport=port)
+                      masterport=int(port))
         version = mfs.masterversion
     except Exception as e:
         error = 'Error while trying to connect to %s:%s<br/>%s' % (host, port, e)
