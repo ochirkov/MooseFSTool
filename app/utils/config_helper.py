@@ -9,7 +9,7 @@ def config_parser(section):
     path = cli_args_parser()
 
     if path is None:
-        config.read('/etc/mfs/moosefs_tool.ini')
+        config.read('/etc/moosefs_tool/moosefs_tool.ini')
     else:
         config.read(path)
     return dict((x, y) for x, y in config.items(section))
