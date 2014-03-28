@@ -1,6 +1,6 @@
 from app.utils.config_helper import remote_auth
 from app.utils import errors
-from app.utils import logger
+from app.utils.log_helper import logger
 
 try:
     import paramiko
