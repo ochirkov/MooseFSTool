@@ -6,6 +6,6 @@ path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append('/'.join(path.split('/')[0:-1]))
 
 from app import app
-from app.utils.log_helper import general
+from app.utils.config_helper import general
 
 app.run(host=general['host'], port=int(general['port']), debug=general['debug'])
