@@ -1,43 +1,44 @@
 {% extends 'main.html' %}
 {% block body %}
 	<div class="row-fluid">
-		<h3>Servers diagramm</h3>
+		<h3>Servers diagram</h3>
 	</div>
-	<div class="row-fluid">
-		<div class="span8 offset2">
+	<div class="row">
+		<div class="span10">
 			<div class="row-fluid">
 				<div class="span12 center">
-					{% for i in [1,2,3,4] %}
-						<div class="inline">
-							<img src="{{ url_for('static', filename='img/diagramm/metalogger.png') }}" width=40 class="bordered"/>
-							<p>metalogger</p>
-						</div>
-					{% endfor %}
+					{% set image_name = 'img/diagramm/metalogger.png' %}
+					{% set servers_url = 'metaloggers' %}
+					{% with servers = metaloggers %}
+						{% include 'servers-item.html' %}
+					{% endwith %}
 				</div>
 			</div>
 			<div class="row-fluid">
-				<div class="span5 center">
+				<div class="span3">
 					<div class="inline">
-						<img src="{{ url_for('static', filename='img/diagramm/master.png') }}" width=60 class="bordered"/>
-						<p>master</p>
-						<p>IP {{ master_host }}</p>
+						<div style="text-align:center">
+							<img src="{{ url_for('static', filename='img/diagramm/master.png') }}" width=60 class="bordered"/>
+							<p>master</p>
+							<p>{{ master_host }}</p>
+						</div>
 					</div>
 				</div>
-				<div class="span6 offset1 center">
-						{% for i in [1,2,3,4,5] %}
-							<div class="inline">
-								<img src="{{ url_for('static', filename='img/diagramm/chunkserver.png') }}" width=50 class="bordered"/>
-								<p>chunkserver</p>
-							</div>
-						{% endfor %}
+				<div class="span8 offset1 center">
+					{% set image_name = 'img/diagramm/chunkserver.png' %}
+					{% set servers_url = 'chunkservers' %}
+					{% with servers = chunkservers %}
+						{% include 'servers-item.html' %}
+					{% endwith %}
 				</div>
 			</div>
 			<div class="row-fluid">
 				<div class="span10 center">
-					<div class="inline">
-						<img src="{{ url_for('static', filename='img/diagramm/client.png') }}" width=50 class="bordered"/>
-						<p>client server</p>{{ servers.0.ip }}
-					</div>
+					{% set image_name = 'img/diagramm/client.png' %}
+					{% set servers_url = 'clients' %}
+					{% with servers = clients %}
+						{% include 'servers-item.html' %}
+					{% endwith %}
 				</div>
 			</div>
 		</div>
