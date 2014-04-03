@@ -5,17 +5,17 @@ import os
 import time
 import datetime
 
-CONFIGS = (
-           "mfsmaster.cfg",
-           "mfsexports.cfg", 
-           "mfstopology.cfg",
-           ) 
+CONFIGS = {
+       0 : "mfsmaster.cfg",
+       1 : "mfsexports.cfg", 
+       2 : "mfstopology.cfg"
+    } 
 
 
 def get_configs(host, path):
     con = transport.Connect(host)
     result = []
-    for file in CONFIGS:
+    for file in CONFIGS.values():
         try:
             f = con.get_file(os.path.join(path, file), 'r')
         except:
