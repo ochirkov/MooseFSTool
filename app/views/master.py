@@ -3,11 +3,13 @@ from app import app
 from app.forms import LoginForm
 from app.decorators import login_required
 from app.utils.files_info import get_configs, edit_config, save_config, get_metafiles_info
+from app.utils.files_info import CONFIGS
 from app.utils.config_helper import roots
 from app.utils.moose_lib import MooseFS
 from collections import OrderedDict
 
 import os
+import re
 
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
@@ -21,8 +23,16 @@ def master():
                                              request.values['config_name'])
     
     configs = get_configs(host, configs_path)
-    metafiles_path = roots['metafiles']
-    metafiles = get_metafiles_info(metafiles_path)
+    
+    with open(os.path.join(configs_path, CONFIGS[0])) as mfsmaster_cfg:
+#         pattern = re.compile('(?!DATA_PATH ?= ?)(\/\w+)+(\r\n)+')
+        data_line = ''.join([l for l in mfsmaster_cfg.readlines() if 'DATA_PATH' in l])
+        try:
+            metafiles_path = re.split(' ?= ?', data_line)[1].rstrip() # also need to replace spaces and tabs
+        except IndexError:
+            metafiles_path = ''
+        metafiles = get_metafiles_info(metafiles_path) \
+                                    if os.path.exists(metafiles_path) else []
     return render_template('master.html',
                            configs_path = configs_path,
                            configs = configs,

@@ -91,7 +91,7 @@ function edit_request(event, config_name) {
 		    </table>
 		{% else %}
 			<div class="alert alert-error">You have no metafiles in {{ metafiles_path }}<br/>
-				Please check "metafiles" option in /etc/moosefs_tool/moosefs_tool.ini
+				Please check DATA_PATH option in {{ configs_path }}/mfsmaster.cfg.
 			</div>
 	</div>
 </div>
