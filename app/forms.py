@@ -8,3 +8,8 @@ class LoginForm(Form):
                                   validators.Required()])
     password = PasswordField(label='password',
                              validators=[validators.Required()])
+
+class BackupForm(Form):
+    
+    path = TextField(label='path to backup',
+                      validators=[validators.Required()])

@@ -131,6 +131,13 @@ class Connect(object):
             return stdout.channel.recv_exit_status()
         elif return_value == 'stdout':
             return stdout.readlines()
+    
+    def remote_path_exists(self, path):
+        try:
+            self.remote.stat(path)
+            return True
+        except IOError, e:
+            return False
 
 
     def ssh_close(self):
