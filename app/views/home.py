@@ -19,7 +19,9 @@ def index():
 def home():
     host = roots['master_host']
     port = roots.get('master_port', 9421)
-    servers = [1]
+    chunkservers = [{'ip':'192.168.56.12' + str(i), 'name' : 'chunkserver'} for i in range(3)]
+    metaloggers = [{'ip':'192.168.56.13' + str(i), 'name' : 'metalogger'} for i in range(10)]
+    clients = [{'ip':'192.168.56.14' + str(i), 'name' : 'client'} for i in range(10)]
     try:
         mfs = MooseFS(masterhost=host,
                       masterport=port)
@@ -28,5 +30,7 @@ def home():
         error = 'Error while trying to connect to %s:%s<br/>%s' % (host, port, e)
     return render_template('home.html',
                            master_host = host,
-                           servers = servers,
+                           metaloggers = metaloggers,
+                           chunkservers = chunkservers,
+                           clients = clients,
                            title = 'Home')

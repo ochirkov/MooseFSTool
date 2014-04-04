@@ -1,0 +1,12 @@
+{% for server in servers[0:4] %}
+	<div class="inline">
+		<a href="{{ url_for(servers_url) }}">
+			<img src="{{ url_for('static', filename=image_name) }}" width=50 class="bordered"/>
+		</a>
+		<p>{{ server.name }}<br/>{{ server.ip }}</p>
+	</div>
+{% endfor %}
+	<div class="inline">
+		{% if servers|length > 4 %}<h3>...</h3>{% endif %}
+		<a href="{{ url_for(servers_url) }}" class="btn btn-mini">Show {{ servers|length }} items<i class="icon-chevron-right"></i></a>
+	</div>
