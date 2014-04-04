@@ -23,7 +23,6 @@ def master():
     configs = get_configs(host, configs_path)
     
     with open(os.path.join(configs_path, CONFIGS[0])) as mfsmaster_cfg:
-#         pattern = re.compile('(?!DATA_PATH ?= ?)(\/\w+)+(\r\n)+')
         data_line = ''.join([l for l in mfsmaster_cfg.readlines() if 'DATA_PATH' in l])
         try:
             metafiles_path = re.split(' ?= ?', data_line)[1].strip()
@@ -60,7 +59,7 @@ def master():
 
 def get_master_info(host, port):
     error = ''
-    version = '0.0.0'
+    version = ''
     try:
         mfs = MooseFS(masterhost=host,
                       masterport=int(port))
