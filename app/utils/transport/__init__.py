@@ -2,6 +2,10 @@ from app.utils.config_helper import remote_auth
 from app.utils import errors
 from app.utils.log_helper import logger
 
+import os
+import time
+import datetime
+
 try:
     import paramiko
 except ImportError:
@@ -132,12 +136,53 @@ class Connect(object):
         elif return_value == 'stdout':
             return stdout.readlines()
     
-    def remote_path_exists(self, path):
+    def path_exists(self, path):
+        """ 
+        Returns True if given path exists on remote host.
+        >>> obj.path_exists('/home/myuser')
+        """
         try:
             self.remote.stat(path)
             return True
         except IOError, e:
             return False
+    
+    
+    @staticmethod
+    def _format_time(t):
+        """
+        Returns time in human readable format. 
+        """
+        format = "%a %b %d %H:%M:%S %Y"
+        return datetime.datetime.strptime(time.ctime(t), format)
+    
+    
+    @staticmethod
+    def sizeof_fmt(size):
+        for x in ['B','KB','MB','GB','TB']:
+            if size < 1024.0:
+                return "%3.1f %s" % (size, x)
+            size /= 1024.0
+    
+    
+    def get_files_info(self, path):
+        """
+        Returns list with stat file info in path on remote host.
+        >>> obj.get_files_info('/home/myuser')
+        """
+        result = []
+        for file in self.remote.listdir(path=path):
+            stat = self.remote.stat(os.path.join(path, file))
+            result.append({'name'  : file,
+                           'mode'  : oct(stat.st_mode),
+                           'uid'   : stat.st_uid,
+                           'gid'   : stat.st_gid,
+                           'size'  : stat.st_size,
+                           'atime' : self._format_time(stat.st_atime),
+                           'mtime' : self._format_time(stat.st_mtime),
+#                            'ctime' : self._format_time(stat.st_ctime)
+                        })
+        return result
 
 
     def ssh_close(self):
