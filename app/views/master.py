@@ -5,6 +5,7 @@ from app.decorators import login_required
 from app.utils import transport
 from app.utils.config_helper import roots
 from app.utils.backup_helper import create_targz
+from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
 from collections import OrderedDict
 
@@ -82,6 +83,8 @@ def get_configinfo(connection, errors, files_list=CONFIGS.values()):
                 errors['configs'].append('\"%s\" is missing in %s.' % (file, configs_path))
             else:
                 configs.append(file)
+            finally:
+                f.close()
         
         if not configs:
             errors['configs'].append(''.join([
@@ -103,7 +106,6 @@ def get_metainfo(connection, errors, configs_path):
     metafiles = []
     try:
         mfsmaster_cfg = connection.get_file(os.path.join(configs_path, CONFIGS[0]), 'r')
-#         with open(os.path.join(configs_path, CONFIGS[0])) as mfsmaster_cfg:
         data_line = ''.join([l for l in mfsmaster_cfg.readlines() \
                                                         if 'DATA_PATH' in l])
         try:
@@ -123,6 +125,8 @@ def get_metainfo(connection, errors, configs_path):
         errors['metafiles'].append(
                         'Cannot find \"%s\" in %s.' % (CONFIGS[0], configs_path)
                         )
+    finally:
+        mfsmaster_cfg.close()
     
     return metafiles_path, metafiles, errors
 
@@ -132,8 +136,13 @@ def edit_config(connection, path, config_name):
     Returns template for config file editing.
     """
     filename = os.path.join(path, config_name)
-    f = connection.get_file(filename, 'r')
-    content = f.read()
+    try:
+        f = connection.get_file(filename, 'r')
+        content = f.read()
+    except Exception as e:
+        logger.exception(e)
+    finally:
+        f.close()
     return render_template('config_files/edit_config.html',
                            filename = filename,
                            filecontent = content)
@@ -142,11 +151,19 @@ def edit_config(connection, path, config_name):
 def save_config(connection, path, config_name):
     """
     Saves config file with new content.
+    Returns empty string for valid flask response.
     """
-    f = connection.get_file(os.path.join(path, config_name), 'w')
-    content = request.values.get('content', '')
-    if content:
-        f.write(content)
+    try:
+        f = connection.get_file(os.path.join(path, config_name), 'w')
+    except Exception as e:
+        logger.exception(e)
+    else:
+        content = request.values.get('content', '')
+        if content:
+            f.write(content)
+            logger.info('%s was successfully saved.' % config_name)
+    finally:
+        f.close()
     return ''
 
 
