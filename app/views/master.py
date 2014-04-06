@@ -102,21 +102,22 @@ def get_metainfo(connection, errors, configs_path):
     metafiles_path = ''
     metafiles = []
     try:
-        with open(os.path.join(configs_path, CONFIGS[0])) as mfsmaster_cfg:
-            data_line = ''.join([l for l in mfsmaster_cfg.readlines() \
-                                                            if 'DATA_PATH' in l])
-            try:
-                metafiles_path = re.split(' ?= ?', data_line)[1].strip()
-            except IndexError:
-                errors['metafiles'].append('Cannot read DATA_PATH option in %s.'\
-                                                                     % CONFIGS[0])
+        mfsmaster_cfg = connection.get_file(os.path.join(configs_path, CONFIGS[0]), 'r')
+#         with open(os.path.join(configs_path, CONFIGS[0])) as mfsmaster_cfg:
+        data_line = ''.join([l for l in mfsmaster_cfg.readlines() \
+                                                        if 'DATA_PATH' in l])
+        try:
+            metafiles_path = re.split(' ?= ?', data_line)[1].strip()
+        except IndexError:
+            errors['metafiles'].append('Cannot read DATA_PATH option in %s.'\
+                                                                 % CONFIGS[0])
+        else:
+            if connection.path_exists(metafiles_path):
+                metafiles = connection.get_files_info(metafiles_path)
             else:
-                if connection.path_exists(metafiles_path):
-                    metafiles = connection.get_files_info(metafiles_path)
-                else:
-                    errors['metafiles'].append(''.join([
-                                        '%s does not exist.<br/>' % metafiles_path,
-                                        'Change DATA_PATH option in mfsmaster.cfg.']))
+                errors['metafiles'].append(''.join([
+                                    '%s does not exist.<br/>' % metafiles_path,
+                                    'Change DATA_PATH option in mfsmaster.cfg.']))
 
     except IOError:
         errors['metafiles'].append(
