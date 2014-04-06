@@ -1,21 +1,36 @@
 <script>
-function open_folder(event, id) {
+function open_folder(event, id, full_name) {
 	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-	$("#" + id).collapse('toggle')
 	
 	if ($('#' + id).hasClass('in')) {
-    	$("#" + id + "_img_plus").addClass('hidden')
-    	$("#" + id + "_img_minus").removeClass('hidden')
-	}
-	else {
+		$("#" + id).collapse('hide');
     	$("#" + id + "_img_minus").addClass('hidden')
     	$("#" + id + "_img_plus").removeClass('hidden')
 	}
 	
+	else {
+		var onclick = $('#link_' + id).attr('onclick')
+		$('#link_' + id).removeAttr('onclick');
+		$("#loading_img_" + id).removeClass('hidden');
+		$.post("", {
+	        full_name : full_name,
+	        csrfmiddlewaretoken: getCookie('csrftoken'),
+	        },function(data) {
+	        	$('#' + id).html(data);
+	        	$("#" + id).collapse('show');
+	        	$("#" + id + "_img_plus").addClass('hidden')
+    			$("#" + id + "_img_minus").removeClass('hidden')
+    			$("#loading_img_" + id).addClass('hidden')
+    			$('#link_' + id).attr('onclick', onclick)
+	        }
+		);
+	}
 }
 
 function send_post(event, full_name, action, is_dir) {
 	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
+	$('#get_info_div').html('')
+	$("#loading_info").removeClass('hidden')
 	$.post("/data/info", {
         full_name : full_name,
         action : action,
@@ -23,6 +38,7 @@ function send_post(event, full_name, action, is_dir) {
         csrfmiddlewaretoken: getCookie('csrftoken'),
         },function(data) {
               $('#get_info_div').html(data);
+              $("#loading_info").addClass('hidden')
         }
 	);
 }
@@ -30,39 +46,10 @@ function send_post(event, full_name, action, is_dir) {
 <div class="row-fluid">
 	<div class="span6">
 		<h3>{{ path }}</h3>
-		<ul class="tree">
-			{% for item in tree.children recursive %}
-			    <li>
-			    	{% if item.children %}
-			    		<a href="#" onclick="open_folder(event, '{{ item.id }}')" class="non-decorated collapsed">
-			    			<img id="{{ item.id }}_img_plus" src="{{ url_for('static', filename='img/tree/small-plus.png') }}"/>
-			    			<img id="{{ item.id }}_img_minus" class="hidden" src="{{ url_for('static', filename='img/tree/small-minus.png') }}"/>
-			    			<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}"/>
-			    		</a>
-			    		<a href="#" onclick="send_post(event, '{{ item.full_name }}', 'mfsdirinfo', true)" class="non-decorated">
-			    			{{ item.name }}
-			    		</a>
-				        <div id="{{ item.id }}" class="collapse"><ul class="tree">{{ loop(item.children) }}</ul></div>
-				    {% else %}
-				    	{% if item.is_dir %}
-				    		<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}" style="margin-left: 13px;"/>
-				    		<a href="#" onclick="send_post(event, '{{ item.full_name }}', 'mfsdirinfo', true)" class="non-decorated">
-				    			{{ item.name }}
-				    		</a>
-				    	{% else %}
-				    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" class="non-decorated">
-								<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
-				    		</a>
-				    		<a href="#" onclick="send_post(event, '{{ item.full_name }}', 'mfsfileinfo', false)" class="non-decorated">
-				    			{{ item.name }}
-				    		</a>
-				    	{% endif %}
-				    {% endif %}
-			    </li>
-			{% endfor %}
-		</ul>
+		{% include 'files_items.html' %}
 	</div>
 	<div class="span6">
+		<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading.gif') }}" class="hidden" width=50/>
 		<div id="get_info_div" style="position:fixed;">
 			<div class="alert alert-success">
 				Click on filename to get mfs info about it.

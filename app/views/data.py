@@ -18,6 +18,11 @@ def data():
     command = 'mfsmount %s' % path
     resp = con.remote_command(command, 'stdout')
     tree = make_remote_tree(con, path)
+    
+    if request.method == 'POST':
+        return render_template('files_items.html',
+                               tree = make_remote_tree(con, request.values['full_name']))
+    
     return render_template('data.html',
                            tree = tree,
                            path = path,
