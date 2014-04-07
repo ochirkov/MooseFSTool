@@ -48,7 +48,7 @@ def master():
             else:
                 backup_form.path.errors += ('This path does not exist.',)
 
-    return render_template('master.html',
+    return render_template('master/master.html',
                            configs_path = configs_path,
                            configs = configs,
                            metafiles_path = metafiles_path,
@@ -143,7 +143,7 @@ def edit_config(connection, path, config_name):
         logger.exception(e)
     finally:
         f.close()
-    return render_template('config_files/edit_config.html',
+    return render_template('master/edit_config.html',
                            filename = filename,
                            filecontent = content)
 

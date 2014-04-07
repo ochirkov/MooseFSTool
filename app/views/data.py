@@ -20,10 +20,10 @@ def data():
     tree = make_remote_tree(con, path)
     
     if request.method == 'POST':
-        return render_template('files_items.html',
+        return render_template('data/files_items.html',
                                tree = make_remote_tree(con, request.values['full_name']))
     
-    return render_template('data.html',
+    return render_template('data/data.html',
                            tree = tree,
                            path = path,
                            title = 'Data')
@@ -42,7 +42,7 @@ def get_file_info():
             data = con.remote_command('mfscheckfile %s' % request.values['full_name'], 'stdout')
         elif action == 'mfsdirinfo':
             data = con.remote_command('mfsdirinfo %s' % request.values['full_name'], 'stdout')
-        return render_template('getinfo.html',
+        return render_template('data/getinfo.html',
                                full_name = request.values['full_name'],
                                is_dir = request.values['is_dir'],
                                action = action,

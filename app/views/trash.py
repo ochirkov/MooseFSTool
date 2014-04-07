@@ -24,7 +24,7 @@ def trash():
         errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
     
     if request.method == 'POST':
-        return render_template('files_items.html',
+        return render_template('data/files_items.html',
                                tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('trash.html',
