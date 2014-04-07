@@ -1,14 +1,39 @@
-<h5>{{ full_name }}</h5>
-<div class="btn-group" data-toggle="buttons-radio">
-	{% if is_dir == 'true' %}
-		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfsdirinfo', true)"class="btn btn-success {% if action == 'mfsdirinfo' %}active{% endif %}">mfsdirinfo</button>
-	{% else %}
-		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfsfileinfo', false)" class="btn btn-success {% if action == 'mfsfileinfo' %}active{% endif %}">mfsfileinfo</button>
-		<button type="button" onclick="send_post(event, '{{ full_name }}', 'mfscheckfile', false)" class="btn btn-success {% if action == 'mfscheckfile' %}active{% endif %}">mfscheckfile</button>
-	{% endif %}
-</div><br/>
-{% if data %}
-	<div class="info">
-		{{ data }}
+<div class="tabbable">
+	<ul class="nav nav-tabs">
+		{% if is_dir == 'true' %}
+			<li class="{% if action == 'mfsdirinfo' %}active{% endif %}">
+				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfsdirinfo', true)">
+					<strong>mfsdirinfo</strong>
+				</a>
+			</li>
+		{% else %}
+			<li class="{% if action == 'mfsfileinfo' %}active{% endif %}">
+				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfsfileinfo', false)">
+					<strong>mfsfileinfo</strong>
+				</a>
+			</li>
+			<li class="{% if action == 'mfscheckfile' %}active{% endif %}">
+				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfscheckfile', false)">
+					<strong>mfscheckfile</strong>
+				</a>
+			</li>
+		{% endif %}
+	</ul>
+	{% if data %}
+	<div class="tab-content">
+		<div class="tab-pane active" id="{{ action }}">
+			<div class="row-fluid">
+				<div class="span12">
+					{% for item in data %}
+						{% if loop.index == 1 %}
+							<strong>{{ item }}</strong><br>
+						{% else %}
+							{{ item }}<br/>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
 	</div>
-{% endif %}
+	{% endif %}
+</div>

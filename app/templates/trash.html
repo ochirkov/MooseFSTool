@@ -1,0 +1,11 @@
+{% extends 'main.html' %}
+{% block body %}
+	{% if errors.mount %}
+		<div class="alert alert-error">
+			{{ errors.mount|safe }}
+		</div>
+	{% endif %}
+	
+	{% include 'files_tree.html' %}
+	
+{% endblock %}
