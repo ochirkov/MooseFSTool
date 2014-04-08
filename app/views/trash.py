@@ -22,6 +22,11 @@ def trash():
     resp = con.remote_command(command, 'stdout')
     if resp:
         errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
+    
+    if request.method == 'POST':
+        return render_template('data/files_items.html',
+                               tree = make_remote_tree(con, request.values['full_name']))
+    
     return render_template('trash.html',
                            errors = errors,
                            tree = tree,
@@ -29,6 +34,31 @@ def trash():
 
 
 def make_remote_tree(connection, path):
+    tree = []
+    try: 
+        lst = connection.remote.listdir(path)
+    except OSError:
+        pass #ignore errors
+    else:
+        for name in lst:
+            fn = os.path.join(path, name)
+            try:
+                children = len(connection.remote.listdir(fn))
+            except OSError:
+                children = []
+            except Exception as e:
+                children = []
+            d = dict(is_dir = False,
+                     name = name,
+                     full_name = fn,
+                     id = _set_id(fn),
+                     children = children)
+            if isdir(connection, fn):
+                d['is_dir'] = True
+            tree.append(d)
+    return tree
+
+def make_remote_tree_old(connection, path):
     tree = dict(id=_set_id(path), is_dir=True,
                 name=os.path.basename(path), full_name=path,
                 children=[])
