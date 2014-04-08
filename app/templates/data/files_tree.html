@@ -29,7 +29,7 @@ function open_folder(event, id, full_name) {
 
 function send_post(event, full_name, action, is_dir) {
 	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-	$('#get_info_div').html('')
+	// $('#get_info_div').html('')
 	$("#loading_info").removeClass('hidden')
 	$.post("/data/info", {
         full_name : full_name,
@@ -46,13 +46,17 @@ function send_post(event, full_name, action, is_dir) {
 <div class="row-fluid">
 	<div class="span6">
 		<h3>{{ path }}</h3>
-		{% include 'files_items.html' %}
+		{% include 'data/files_items.html' %}
 	</div>
 	<div class="span6">
-		<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading.gif') }}" class="hidden" width=50/>
-		<div id="get_info_div" style="position:fixed;">
-			<div class="alert alert-success">
-				Click on filename to get mfs info about it.
+		<div style="position:fixed">
+			<h3>MFS info
+				<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading_big.gif') }}" class="hidden" width=30/>
+			</h3>
+			<div id="get_info_div">
+				<div class="alert alert-success">
+					Click on filename to get mfs info about it.
+				</div>
 			</div>
 		</div>
 	</div>
