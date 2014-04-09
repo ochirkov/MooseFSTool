@@ -7,6 +7,7 @@ from app.utils.config_helper import roots
 from app.utils.backup_helper import create_targz
 from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
+from app.utils.validate_creds import creds_validator
 from collections import OrderedDict
 
 import os
@@ -151,19 +152,28 @@ def edit_config(connection, path, config_name):
 def save_config(connection, path, config_name):
     """
     Saves config file with new content.
-    Returns empty string for valid flask response.
+    Returns empty string for valid flask response and error message otherwise.
     """
-    try:
-        f = connection.get_file(os.path.join(path, config_name), 'w')
-    except Exception as e:
-        logger.exception(e)
-    else:
-        content = request.values.get('content', '')
-        if content:
-            f.write(content)
+    new_content = request.values.get('content', '')
+    root_passwd = request.values.get('root_passwd', '')
+    if root_passwd and creds_validator('root', root_passwd) and new_content:
+        try:
+            f = connection.get_file(os.path.join(path, config_name), 'w')
+        except Exception as e:
+            logger.exception(e)
+            return 'Error while opening file %s.<br>%s' % (config_name, e)
+        else:
+            f.write(new_content)
+            f.close()
             logger.info('%s was successfully saved.' % config_name)
-    finally:
-        f.close()
+            
+    elif not new_content:
+        msg = 'Attempting for writing of empty content to %s.' % config_name
+        logger.error(msg)
+        return msg
+    else:
+        return 'Invalid root password.'
+                
     return ''
 
 

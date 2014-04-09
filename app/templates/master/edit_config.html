@@ -2,15 +2,23 @@
 	function confirm_save(event, config_name) {
 		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
 	    var content = $('#id_config_text').val()
+	    var root_passwd = $('#id_root_passwd').val()
 	    var c=confirm("Do you realy want to save file {{ filename }}?");
 	    if (c == true) {
 			$.post("", {
 		        config_name : config_name,
 		        content : content,
+		        root_passwd : root_passwd,
 		        action : 'save',
 		        csrfmiddlewaretoken: getCookie('csrftoken'),
 		        },function(data) {
-		            window.location.reload()
+		        	if (data == '') {
+		            	window.location.reload();
+		           }
+		           else {
+		           		$('#id_error_div').removeClass('hidden')
+		           		$('#id_error_div').html(data)
+		           }
 		        }
 			);
 		}
@@ -25,6 +33,11 @@
 	}
 </script>
 <h5>{{ filename }}</h5>
-<textarea id="id_config_text" style="width: 600px; height: 500px;" name="content">{{ filecontent }}</textarea><br/>
-<a href="#" class="btn btn-success" onclick="confirm_save(event, '{{ filename }}')">Save</a>
-<a href="#" onclick="confirm_cancel(event)" class="btn">Cancel</a>
+<div class="alert alert-error hidden" id="id_error_div">
+</div>
+<form>
+	<textarea id="id_config_text" style="width: 600px; height: 400px;" name="content">{{ filecontent }}</textarea><br/>
+	<label>Type root password:</label><input type="password" name="root_passwd" id="id_root_passwd"/><br/>
+	<input type="submit" class="btn btn-success" onclick="confirm_save(event, '{{ filename }}')" value="Save"/>
+	<a href="#" onclick="confirm_cancel(event)" class="btn">Cancel</a>
+</form>
