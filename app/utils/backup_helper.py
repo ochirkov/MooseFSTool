@@ -28,10 +28,10 @@ def create_targz(path_to_archive, source_data, suffix='backup'):
         tar = tarfile.open(archive_name, "w:gz")
     except Exception as e:
         logger.exception(e)
-        return 1
+        return str(e)
     else:
         tar.add(source_data)
         logger.info('Backup \"%s\" was successfully created.' % archive_name)
         tar.close()
-        return 0
+        return ''
         

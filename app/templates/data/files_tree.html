@@ -44,6 +44,11 @@ function send_post(event, full_name, action, is_dir) {
 }
 </script>
 <div class="row-fluid">
+	{% if errors %}
+		<div class="alert alert-error">
+			{{ errors.data_path }}
+		</div>
+	{% else %}
 	<div class="span6">
 		<h3>{{ path }}</h3>
 		{% include 'data/files_items.html' %}
@@ -60,4 +65,5 @@ function send_post(event, full_name, action, is_dir) {
 			</div>
 		</div>
 	</div>
+	{% endif %}
 </div>

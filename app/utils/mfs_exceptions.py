@@ -9,3 +9,15 @@ class MooseError(Exception):
 
 class MooseConnectionFailed(MooseError):
     pass
+
+class OpenRemoteFileFailed(MooseError):
+    pass
+
+class DataPathGettingFailed(MooseError):
+    pass
+
+class ConfigsException(MooseError):
+    pass
+
+class MetafilesException(MooseError):
+    pass

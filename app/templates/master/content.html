@@ -40,7 +40,7 @@ function edit_request(event, config_name) {
 	{% endif %}
 	</div>
 	<div class="span4">
-		<h3>Config files ({{ configs_path }}): </h3>
+		<h3>Config files ({{ config_path }}): </h3>
 		{% if errors.configs %}
 			<div class="alert alert-error">
 				{% for e in errors.configs %}
@@ -78,7 +78,7 @@ function edit_request(event, config_name) {
 							{% if field.errors %}
 								<ul class="text-error">
 									{% for error in field.errors %}
-										<li>{{ error }}</li>
+										<li>{{ error|safe }}</li>
 									{% endfor %}
 								</ul>
 							{% endif %}
@@ -101,7 +101,7 @@ function edit_request(event, config_name) {
 	</div>
 </div>
 <div class="row-fluid">
-	<h3>Metafiles ({{ metafiles_path }}): </h3>
+	<h3>Metafiles ({{ meta_path }}): </h3>
 	{% if errors.metafiles %}
 		<div class="alert alert-error">
 			{% for e in errors.metafiles %}

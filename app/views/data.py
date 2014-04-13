@@ -2,8 +2,11 @@ from flask import render_template, redirect, request, url_for, jsonify
 from app import app
 from app.utils import transport
 from app.utils.config_helper import roots
+from app.utils.log_helper import logger
+from app.utils import mfs_exceptions
 from app.decorators import login_required
 from app.views.trash import make_remote_tree
+
 
 import os
 import hashlib
@@ -12,20 +15,26 @@ import hashlib
 @app.route('/data', methods = ['GET', 'POST'])
 @login_required
 def data():
+    errors = {}
     host = roots['master_host']
     con = transport.Connect(host)
-    path = '/mnt/mfs'
-    command = 'mfsmount %s' % path
-    resp = con.remote_command(command, 'stdout')
-    tree = make_remote_tree(con, path)
-    
-    if request.method == 'POST':
-        return render_template('data/files_items.html',
-                               tree = make_remote_tree(con, request.values['full_name']))
+    path = get_data_path(con)
+    tree= {}
+    if not path:
+        errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
+    else:
+        command = 'mfsmount %s' % path
+        resp = con.remote_command(command, 'stdout')
+        tree = make_remote_tree(con, path)
+        
+        if request.method == 'POST':
+            return render_template('data/files_items.html',
+                                   tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('data/data.html',
                            tree = tree,
                            path = path,
+                           errors = errors,
                            title = 'Data')
 
 
@@ -48,3 +57,32 @@ def get_file_info():
                                action = action,
                                data = data
                                )
+
+def get_data_path(connection):
+    """
+    Tries to get data path from /etc/fstab and than from 
+    moosefs_tool.ini. Returns empty if it fails.
+    """
+    path = ''
+    try:
+        logger.info('Getting data path from /etc/fstab.')
+        f = connection.get_file('/etc/fstab', 'r')
+        for line in f.readlines():
+            if 'fuse' in line and 'mfsmount' in line:
+                path = line.split()[1]
+                logger.info('Data path %s was got successfully.' % path)
+    except IOError:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Cannot read /etc/fstab file.'))
+    except IndexError:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Cannot parse /etc/fstab.'))
+    except Exception as e:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Unresolved exception:\n%s' % e))
+    if not path:
+        logger.info('Getting data path from moosefs_tool.ini.')
+        path = roots.get('data_path', '')
+        if path:
+            logger.info('Data path %s was got successfully.' % path)
+    return path
