@@ -2,11 +2,13 @@ from flask import render_template, redirect, request, url_for
 from app import app
 from app.forms import BackupForm
 from app.decorators import login_required
+from app.utils import mfs_exceptions
 from app.utils import transport
 from app.utils.config_helper import roots
 from app.utils.backup_helper import create_targz
 from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
+from app.utils.validate_creds import creds_validator
 from collections import OrderedDict
 
 import os
@@ -17,7 +19,7 @@ CONFIGS = {
        0 : "mfsmaster.cfg",
        1 : "mfsexports.cfg", 
        2 : "mfstopology.cfg"
-    } 
+    }
 
 
 @app.route('/master', methods = ['GET', 'POST'])
@@ -29,29 +31,31 @@ def master():
     con = transport.Connect(host)
     backup_form = BackupForm(request.form)
     
-    master_info, errors               = get_master_info(host, port, errors)
-    configs_path, configs, errors     = get_configinfo(con, errors)
-    metafiles_path, metafiles, errors = get_metainfo(con, errors, configs_path)
+    master_info, errors          = get_master_info(host, port, errors)
+    config_path, configs, errors = get_config_info(con, errors)
+    meta_path, metafiles, errors = get_meta_info(con, errors, config_path)
 
     if request.method == 'POST':
-        if 'action' in request.values:
-            # save or edit config
+        if 'action' in request.values: # save or edit config
             action = request.values['action']
-            return globals()[action + '_config'](con, configs_path,
+            return globals()[action + '_config'](con, config_path,
                                                  request.values['config_name'])
-        else:
-            # backup request
+        
+        else:                          # backup request
             path = backup_form.path.data
             if con.path_exists(path):
-                create_targz(path, metafiles_path, suffix='mfs_metadata')
-                return redirect(url_for('master'))
+                err = create_targz(path, meta_path, suffix='mfs_metadata')
+                if err:
+                    backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
+                else:
+                    return redirect(url_for('master'))
             else:
                 backup_form.path.errors += ('This path does not exist.',)
 
     return render_template('master/master.html',
-                           configs_path = configs_path,
+                           config_path = config_path,
                            configs = configs,
-                           metafiles_path = metafiles_path,
+                           meta_path = meta_path,
                            metafiles = metafiles,
                            master_info = master_info,
                            backup_form = backup_form,
@@ -59,76 +63,87 @@ def master():
                            title = 'Master')
 
 
-def get_configinfo(connection, errors, files_list=CONFIGS.values()):
+def get_config_info(connection, errors, files_list=CONFIGS.values()):
     """
-    Tries to get configs_path from moosefs_tool.ini.
-    Checks files from files_list in configs_path on remote host.
-    Adds configs errors if they are.
+    Tries to get config_path from moosefs_tool.ini.
+    Checks files from files_list in config_path on remote host.
+    Adds config's errors if they are.
     """
     errors['configs'] = []
-    configs_path = ''
+    config_path = ''
     configs = []
     try:
-        configs_path = roots['configs']
+        config_path = roots['config_path']
     except KeyError:
-        errors['configs'].append(''.join([
-                                'Cannot find mfs config files.<br/>',
-                                'Please set \"configs\" option in moosefs_tool.ini',
+        msg = 'Cannot get \"config_path\" option from moosefs_tool.ini'
+        logger.error(mfs_exceptions.ConfigsException(msg))
+        errors['configs'].append(''.join([msg,
+                                '<br/>Please set \"config_path\" option',
                                 'and restart application.']))
     else:
         for file in files_list:
-            try:
-                f = connection.get_file(os.path.join(configs_path, file), 'r')
-            except:
-                errors['configs'].append('\"%s\" is missing in %s.' % (file, configs_path))
-            else:
+            full_path = os.path.join(config_path, file)
+            
+            if connection.path_exists(full_path):
+                f = connection.get_file(full_path, 'r')
                 configs.append(file)
-            finally:
                 f.close()
+            
+            else:
+                msg = '\"%s\" is missing in %s.' % (file, config_path)
+                logger.error(mfs_exceptions.ConfigsException(msg))
+                errors['configs'].append(msg)
         
         if not configs:
-            errors['configs'].append(''.join([
-                            'You have no configs in %s.<br/>' % configs_path,
-                            'Please check \"configs\" option in moosefs_tool.ini']))
+            msg = 'You have no configs in %s.<br/>' % config_path
+            logger.error(mfs_exceptions.ConfigsException(msg))
+            errors['configs'].append(''.join([msg,
+                    'Please check \"config_path\" option in moosefs_tool.ini']))
     
-    return configs_path, configs, errors
+    return config_path, configs, errors
 
 
-def get_metainfo(connection, errors, configs_path):
+def get_meta_info(connection, errors, config_path):
     """
-    Gets DATA_PATH option from configs_path/mfsmaster.cfg file and tries 
+    Gets DATA_PATH option from config_path/mfsmaster.cfg file and tries 
     to get information about metafiles in DATA_PATH. 
     Adds errors if mfsmaster.cfg is missing or
     DATA_PATH is not readable or not exists.
     """
     errors['metafiles'] = []
-    metafiles_path = ''
+    meta_path = ''
     metafiles = []
+    
+    mfsmaster_cfg_path = os.path.join(config_path, CONFIGS[0])
+    
     try:
-        mfsmaster_cfg = connection.get_file(os.path.join(configs_path, CONFIGS[0]), 'r')
+        mfsmaster_cfg = connection.get_file(mfsmaster_cfg_path, 'r')
         data_line = ''.join([l for l in mfsmaster_cfg.readlines() \
                                                         if 'DATA_PATH' in l])
-        try:
-            metafiles_path = re.split(' ?= ?', data_line)[1].strip()
-        except IndexError:
-            errors['metafiles'].append('Cannot read DATA_PATH option in %s.'\
-                                                                 % CONFIGS[0])
-        else:
-            if connection.path_exists(metafiles_path):
-                metafiles = connection.get_files_info(metafiles_path)
-            else:
-                errors['metafiles'].append(''.join([
-                                    '%s does not exist.<br/>' % metafiles_path,
-                                    'Change DATA_PATH option in mfsmaster.cfg.']))
+        meta_path = re.split(' ?= ?', data_line)[1].strip()
 
-    except IOError:
-        errors['metafiles'].append(
-                        'Cannot find \"%s\" in %s.' % (CONFIGS[0], configs_path)
-                        )
-    finally:
+        if connection.path_exists(meta_path):
+            metafiles = connection.get_files_info(meta_path)
+        else:
+            msg = 'Metafiles path % s does not exist.' % meta_path
+            logger.error(mfs_exceptions.MetafilesException(msg))
+            errors['metafiles'].append(''.join([msg,
+                        '<br/>Change DATA_PATH option in mfsmaster.cfg.']))
+
+    except mfs_exceptions.OpenRemoteFileFailed:
+        msg = 'Cannot find \"%s\" in %s.' % (CONFIGS[0], config_path)
+        logger.error(mfs_exceptions.MetafilesException(msg))
+        errors['metafiles'].append(msg)
+    
+    except IndexError:
+        msg = 'Cannot read DATA_PATH option in %s.' % CONFIGS[0]
+        logger.error(mfs_exceptions.MetafilesException(msg))
+        errors['metafiles'].append(msg)
+    
+    else:
         mfsmaster_cfg.close()
     
-    return metafiles_path, metafiles, errors
+    return meta_path, metafiles, errors
 
 
 def edit_config(connection, path, config_name):
@@ -151,19 +166,28 @@ def edit_config(connection, path, config_name):
 def save_config(connection, path, config_name):
     """
     Saves config file with new content.
-    Returns empty string for valid flask response.
+    Returns empty string for valid flask response and error message otherwise.
     """
-    try:
-        f = connection.get_file(os.path.join(path, config_name), 'w')
-    except Exception as e:
-        logger.exception(e)
-    else:
-        content = request.values.get('content', '')
-        if content:
-            f.write(content)
+    new_content = request.values.get('content', '')
+    root_passwd = request.values.get('root_passwd', '')
+    if root_passwd and creds_validator('root', root_passwd) and new_content:
+        try:
+            f = connection.get_file(os.path.join(path, config_name), 'w')
+        except Exception as e:
+            logger.exception(e)
+            return 'Error while opening file %s.<br>%s' % (config_name, e)
+        else:
+            f.write(new_content)
+            f.close()
             logger.info('%s was successfully saved.' % config_name)
-    finally:
-        f.close()
+            
+    elif not new_content:
+        msg = 'Attempting for writing of empty content to %s.' % config_name
+        logger.error(msg)
+        return msg
+    else:
+        return 'Invalid root password.'
+                
     return ''
 
 

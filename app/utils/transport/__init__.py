@@ -1,5 +1,5 @@
 from app.utils.config_helper import remote_auth
-from app.utils import errors
+from app.utils import mfs_exceptions
 from app.utils.log_helper import logger
 
 import os
@@ -67,7 +67,7 @@ class Connect(object):
         except Exception, e:
             msg = 'Error during ssh client connect: %s' % str(e)
             logger.error(e)
-            raise errors.MooseConnectionFailed(msg)
+            raise mfs_exceptions.MooseConnectionFailed(msg)
 
         return ssh_client
 
@@ -98,7 +98,7 @@ class Connect(object):
         except Exception, e:
             msg = "Failed to open sftp session: %s" % str(e)
             logger.error(e)
-            raise errors.MooseConnectionFailed(msg)
+            raise mfs_exceptions.MooseConnectionFailed(msg)
         return sftp
 
 
@@ -116,7 +116,7 @@ class Connect(object):
         except IOError, e:
             msg = "Failed to open remote file: %s" % str(e)
             logger.error(e)
-            raise errors.MooseConnectionFailed(msg)
+            raise mfs_exceptions.OpenRemoteFileFailed(msg)
         return file_o
 
 
