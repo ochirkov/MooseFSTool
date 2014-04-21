@@ -1,4 +1,8 @@
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
+
 import argparse
 
 config = ConfigParser()

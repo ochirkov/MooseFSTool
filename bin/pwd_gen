@@ -5,8 +5,8 @@ import argparse
 import sys
 
 parser = argparse.ArgumentParser(description='Parsing passwd')
-parser.add_argument('-p', action="store", dest='p',help='password')
-parser.add_argument('-s', action="store", dest='s',help='salt lenght should be 8 <= salt_len <= 16')
+parser.add_argument('-p', action="store", dest='p', help='password')
+parser.add_argument('-s', action="store", dest='s', help='salt lenght should be 8 <= salt_len <= 16')
 
 parsed_args = parser.parse_args()
 
@@ -14,14 +14,14 @@ parsed_args = parser.parse_args()
 def gen_pwd(pwd, salt):
 
     if parsed_args.s is None or parsed_args.p is None:
-        print parser.print_help()
-    elif len(salt) <= 8 and len(salt) >= 16:
-        print parser.print_help()
+        print(parser.print_help())
+    elif not 8 <= len(salt) <= 16:
+        print(parser.print_help())
         sys.exit(1)
     else:
         last_str = '{0}{1}{0}{2}{0}'.format('$', 6, salt)
         crypted_pwd = crypt.crypt(pwd, last_str)
-        print crypted_pwd
+        print(crypted_pwd)
 
 
 if __name__ == '__main__':

@@ -64,7 +64,7 @@ class Connect(object):
                 elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
                     ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
                                        password=self.password)
-        except Exception, e:
+        except Exception as e:
             msg = 'Error during ssh client connect: %s' % str(e)
             logger.error(e)
             raise mfs_exceptions.MooseConnectionFailed(msg)
@@ -95,7 +95,7 @@ class Connect(object):
         try:
             sftp = self.ssh.open_sftp()
 
-        except Exception, e:
+        except Exception as e:
             msg = "Failed to open sftp session: %s" % str(e)
             logger.error(e)
             raise mfs_exceptions.MooseConnectionFailed(msg)
@@ -113,7 +113,7 @@ class Connect(object):
         try:
             file_o = self.remote.file(path, mode)
 
-        except IOError, e:
+        except IOError as e:
             msg = "Failed to open remote file: %s" % str(e)
             logger.error(e)
             raise mfs_exceptions.OpenRemoteFileFailed(msg)
@@ -144,7 +144,7 @@ class Connect(object):
         try:
             self.remote.stat(path)
             return True
-        except IOError, e:
+        except IOError as e:
             return False
     
     
