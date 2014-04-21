@@ -4,6 +4,10 @@ import time
 import traceback
 import sys
 
+# PY3 compatibility, py3 range is same as py2k xrange
+if sys.version_info >= (3, 0):
+    xrange = range
+
 class MooseFS():
     """
     MooseFS class based on mfscgi script for encapsulate moose data manipulating.
