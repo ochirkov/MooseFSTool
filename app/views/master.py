@@ -10,9 +10,10 @@ from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
 from app.utils.validate_creds import creds_validator
 from collections import OrderedDict
-
 import os
 import re
+import sys
+PY3 = sys.version_info >= (3, 0)
 
 
 CONFIGS = {
@@ -51,7 +52,8 @@ def master():
                     return redirect(url_for('master'))
             else:
                 backup_form.path.errors += ('This path does not exist.',)
-
+    if PY3:
+        master_info.iteritems = master_info.items
     return render_template('master/master.html',
                            config_path = config_path,
                            configs = configs,

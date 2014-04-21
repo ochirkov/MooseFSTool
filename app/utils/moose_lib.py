@@ -3,7 +3,6 @@ import struct
 import time
 import traceback
 import sys
-
 # PY3 compatibility, py3 range is same as py2k xrange
 if sys.version_info >= (3, 0):
     xrange = range
@@ -35,7 +34,7 @@ class MooseFS():
             totalsent = totalsent + sent
 
     def myrecv(self, socket, leng):
-        msg = ''
+        msg = b''
         while len(msg) < leng:
             chunk = socket.recv(leng-len(msg))
             if chunk == '':
