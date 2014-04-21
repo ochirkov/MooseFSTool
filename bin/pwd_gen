@@ -15,7 +15,7 @@ def gen_pwd(pwd, salt):
 
     if parsed_args.s is None or parsed_args.p is None:
         print(parser.print_help())
-    elif 8 <= len(salt) <= 16:
+    elif not 8 <= len(salt) <= 16:
         print(parser.print_help())
         sys.exit(1)
     else:
