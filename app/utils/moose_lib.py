@@ -1,8 +1,37 @@
+from app.utils.log_helper import logger
+from app.utils import mfs_exceptions
 import socket
 import struct
 import time
 import traceback
 import sys
+
+PROTO_BASE = 0
+
+CLTOMA_CSERV_LIST = (PROTO_BASE+500)
+MATOCL_CSERV_LIST = (PROTO_BASE+501)
+CLTOCS_HDD_LIST_V1 = (PROTO_BASE+502)
+CSTOCL_HDD_LIST_V1 = (PROTO_BASE+503)
+CLTOMA_SESSION_LIST = (PROTO_BASE+508)
+MATOCL_SESSION_LIST = (PROTO_BASE+509)
+CLTOMA_INFO = (PROTO_BASE+510)
+MATOCL_INFO = (PROTO_BASE+511)
+CLTOMA_FSTEST_INFO = (PROTO_BASE+512)
+MATOCL_FSTEST_INFO = (PROTO_BASE+513)
+CLTOMA_CHUNKSTEST_INFO = (PROTO_BASE+514)
+MATOCL_CHUNKSTEST_INFO = (PROTO_BASE+515)
+CLTOMA_CHUNKS_MATRIX = (PROTO_BASE+516)
+MATOCL_CHUNKS_MATRIX = (PROTO_BASE+517)
+CLTOMA_QUOTA_INFO = (PROTO_BASE+518)
+MATOCL_QUOTA_INFO = (PROTO_BASE+519)
+CLTOMA_EXPORTS_INFO = (PROTO_BASE+520)
+MATOCL_EXPORTS_INFO = (PROTO_BASE+521)
+CLTOMA_MLOG_LIST = (PROTO_BASE+522)
+MATOCL_MLOG_LIST = (PROTO_BASE+523)
+CLTOMA_CSSERV_REMOVESERV = (PROTO_BASE+524)
+MATOCL_CSSERV_REMOVESERV = (PROTO_BASE+525)
+CLTOCS_HDD_LIST_V2 = (PROTO_BASE+600)
+CSTOCL_HDD_LIST_V2 = (PROTO_BASE+601)
 
 # PY3 compatibility, py3 range is same as py2k xrange
 if sys.version_info >= (3, 0):
@@ -240,123 +269,166 @@ class MooseFS():
         }
         return ret
 
-
     def mfs_servers(self):
         servers = []
         try:
             s = self.bind_to_master()
-            self.mysend(s, struct.pack(">LL", 500, 0))
+            self.mysend(s, struct.pack(">LL", CLTOMA_CSERV_LIST, 0))
             header = self.myrecv(s, 8)
             cmd, length = struct.unpack(">LL", header)
-            if cmd == 501 and self.masterversion >= (1, 5, 13) and (length % 54) == 0:
+            if cmd == MATOCL_CSERV_LIST and self.masterversion >= (1, 5, 13) and (length % 54) == 0:
                 data = self.myrecv(s, length)
                 n = length/54
+
                 for i in xrange(n):
                     d = data[i*54:(i+1)*54]
-                    v1, v2, v3, ip1, ip2, ip3, ip4, port, used, total, chunks, tdused, tdtotal, tdchunks, \
-                    errcnt = struct.unpack(">HBBBBBBHQQLQQLL", d)
+                    disconnected,v1,v2,v3,ip1,ip2,ip3,ip4,port,used,total,chunks,tdused,tdtotal,tdchunks, \
+                    errcnt = struct.unpack(">BBBBBBBBHQQLQQLL",d)
+                    strip = "%u.%u.%u.%u" % (ip1,ip2,ip3,ip4)
 
                     try:
-                        host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
-                    except Exception:
+                        host = (socket.gethostbyaddr(strip))[0]
+                    except Exception, e:
                         host = "(unresolved)"
-                    ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
-                    ver = '.'.join([str(v1), str(v2), str(v3)])
-                    percent_used = ''
-                    if (total>0):
-                        percent_used = (used*100.0)/total
-                    else:
-                        percent_used = '-'
-                    tdpercent_used = ''
-                    if (tdtotal>0):
-                        tdpercent_used = (tdused*100.0)/tdtotal
-                    else:
-                        tdpercent_used = ''
-                    servers.append({
-                        'host':           host,
-                        'ip':             ip,
-                        'version':        ver,
-                        'port':           port,
-                        'used':           used,
-                        'total':          total,
-                        'chunks':         chunks,
-                        'percent_used':   percent_used,
-                        'tdused':         tdused,
-                        'tdtotal':        tdtotal,
-                        'tdchucnks':      tdchunks,
-                        'tdpercent_used': tdpercent_used,
-                        'errcount':       errcnt,
-                    })
-            elif cmd == 501 and self.masterversion < (1, 5, 13) and (length % 50) == 0:
-                data = self.myrecv(s, length)
-                n = length/50
-                for i in xrange(n):
-                    d = data[i*50:(i+1)*50]
-                    ip1, ip2, ip3, ip4, port, used, total, chunks, tdused, tdtotal, \
-                    tdchunks, errcnt = struct.unpack(">BBBBHQQLQQLL", d)
+                        msg = 'Error during server hostname getting %s' % str(e)
+                        logger.error(msg)
+                        raise mfs_exceptions.MooseError(msg)
 
-                    try:
-                        host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
-                    except Exception:
-                        host = "(unresolved)"
-                    ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
-                    percent_used = ''
-                    if (total>0):
-                        percent_used = (used*100.0)/total
-                    else:
-                        percent_used = '-'
-                    tdpercent_used = ''
-                    if (tdtotal>0):
-                        tdpercent_used = (tdused*100.0)/tdtotal
-                    else:
-                        tdpercent_used = ''
                     servers.append({
-                        'host':           host,
-                        'ip':             ip,
-                        'port':           port,
-                        'used':           used,
-                        'total':          total,
-                        'chunks':         chunks,
-                        'percent_used':   percent_used,
-                        'tdused':         tdused,
-                        'tdtotal':        tdtotal,
-                        'tdchucnks':      tdchunks,
-                        'tdpercent_used': tdpercent_used,
-                        'errcount':       errcnt,
-                    })
-            s.close()
-        except Exception:
-            traceback.print_exc(file=sys.stdout)
+                            'host':           host,
+                            'ip':             strip,
+                            'port':           port
+                        })
 
-        # Metadata backup loggers
-        mbloggers = []
-        if self.masterversion >= (1, 6, 5):
-            try:
-                s = self.bind_to_master()
-                self.mysend(s, struct.pack(">LL", 522, 0))
-                header = self.myrecv(s, 8)
-                cmd, length = struct.unpack(">LL", header)
-                if cmd == 523 and (length % 8) == 0:
-                    data = self.myrecv(s, length)
-                    n = length/8
-                    for i in xrange(n):
-                        d = data[i*8:(i+1)*8]
-                        v1, v2, v3, ip1, ip2, ip3, ip4 = struct.unpack(">HBBBBBB", d)
-                        ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
-                        ver = '.'.join([str(v1), str(v2), str(v3)])
-                        try:
-                            host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
-                        except Exception:
-                            host = "(unresolved)"
-                        mbloggers.append((host, ip, ver))
-                s.close()
-            except Exception:
-                traceback.print_exc(file=sys.stdout)
-        ret = {
-            'servers':                 servers,
-            'metadata_backup_loggers': mbloggers,
-        }
-        return ret
+                return servers
+
+            else:
+                msg = 'Error during servers list obtainig. Check master version, it could be obsolite'
+                logger.error(msg)
+                raise mfs_exceptions.MooseError(msg)
+
+        except Exception, e:
+                msg = 'Error during connect to master: %s' % str(e)
+                logger.error(msg)
+                raise mfs_exceptions.MooseConnectionFailed(msg)
+
+
+    # def mfs_servers(self):
+    #     servers = []
+    #     try:
+    #         s = self.bind_to_master()
+    #         self.mysend(s, struct.pack(">LL", 500, 0))
+    #         header = self.myrecv(s, 8)
+    #         cmd, length = struct.unpack(">LL", header)
+    #         if cmd == 501 and self.masterversion >= (1, 5, 13) and (length % 54) == 0:
+    #             data = self.myrecv(s, length)
+    #             n = length/54
+    #             for i in xrange(n):
+    #                 d = data[i*54:(i+1)*54]
+    #                 v1, v2, v3, ip1, ip2, ip3, ip4, port, used, total, chunks, tdused, tdtotal, tdchunks, \
+    #                 errcnt = struct.unpack(">HBBBBBBHQQLQQLL", d)
+    #
+    #                 try:
+    #                     host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
+    #                 except Exception:
+    #                     host = "(unresolved)"
+    #                 ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
+    #                 ver = '.'.join([str(v1), str(v2), str(v3)])
+    #                 percent_used = ''
+    #                 if (total>0):
+    #                     percent_used = (used*100.0)/total
+    #                 else:
+    #                     percent_used = '-'
+    #                 tdpercent_used = ''
+    #                 if (tdtotal>0):
+    #                     tdpercent_used = (tdused*100.0)/tdtotal
+    #                 else:
+    #                     tdpercent_used = ''
+    #                 servers.append({
+    #                     'host':           host,
+    #                     'ip':             ip,
+    #                     'version':        ver,
+    #                     'port':           port,
+    #                     'used':           used,
+    #                     'total':          total,
+    #                     'chunks':         chunks,
+    #                     'percent_used':   percent_used,
+    #                     'tdused':         tdused,
+    #                     'tdtotal':        tdtotal,
+    #                     'tdchucnks':      tdchunks,
+    #                     'tdpercent_used': tdpercent_used,
+    #                     'errcount':       errcnt,
+    #                 })
+    #         elif cmd == 501 and self.masterversion < (1, 5, 13) and (length % 50) == 0:
+    #             data = self.myrecv(s, length)
+    #             n = length/50
+    #             for i in xrange(n):
+    #                 d = data[i*50:(i+1)*50]
+    #                 ip1, ip2, ip3, ip4, port, used, total, chunks, tdused, tdtotal, \
+    #                 tdchunks, errcnt = struct.unpack(">BBBBHQQLQQLL", d)
+    #
+    #                 try:
+    #                     host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
+    #                 except Exception:
+    #                     host = "(unresolved)"
+    #                 ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
+    #                 percent_used = ''
+    #                 if (total>0):
+    #                     percent_used = (used*100.0)/total
+    #                 else:
+    #                     percent_used = '-'
+    #                 tdpercent_used = ''
+    #                 if (tdtotal>0):
+    #                     tdpercent_used = (tdused*100.0)/tdtotal
+    #                 else:
+    #                     tdpercent_used = ''
+    #                 servers.append({
+    #                     'host':           host,
+    #                     'ip':             ip,
+    #                     'port':           port,
+    #                     'used':           used,
+    #                     'total':          total,
+    #                     'chunks':         chunks,
+    #                     'percent_used':   percent_used,
+    #                     'tdused':         tdused,
+    #                     'tdtotal':        tdtotal,
+    #                     'tdchucnks':      tdchunks,
+    #                     'tdpercent_used': tdpercent_used,
+    #                     'errcount':       errcnt,
+    #                 })
+    #         s.close()
+    #     except Exception:
+    #         traceback.print_exc(file=sys.stdout)
+    #
+    #     # Metadata backup loggers
+    #     mbloggers = []
+    #     if self.masterversion >= (1, 6, 5):
+    #         try:
+    #             s = self.bind_to_master()
+    #             self.mysend(s, struct.pack(">LL", 522, 0))
+    #             header = self.myrecv(s, 8)
+    #             cmd, length = struct.unpack(">LL", header)
+    #             if cmd == 523 and (length % 8) == 0:
+    #                 data = self.myrecv(s, length)
+    #                 n = length/8
+    #                 for i in xrange(n):
+    #                     d = data[i*8:(i+1)*8]
+    #                     v1, v2, v3, ip1, ip2, ip3, ip4 = struct.unpack(">HBBBBBB", d)
+    #                     ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
+    #                     ver = '.'.join([str(v1), str(v2), str(v3)])
+    #                     try:
+    #                         host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
+    #                     except Exception:
+    #                         host = "(unresolved)"
+    #                     mbloggers.append((host, ip, ver))
+    #             s.close()
+    #         except Exception:
+    #             traceback.print_exc(file=sys.stdout)
+    #     ret = {
+    #         'servers':                 servers,
+    #         'metadata_backup_loggers': mbloggers,
+    #     }
+    #     return ret
 
 
     def mfs_disks(self, HDtime='max', HDperiod='min'):
