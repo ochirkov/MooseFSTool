@@ -26,7 +26,7 @@
 	}
 	function confirm_cancel(event) {
 		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-		var c=confirm("Do you realy want to discard changes in {{ filename }}? All shanges will be lost!");
+		var c=confirm("Do you really want to discard changes in {{ filename }}? All changes will be lost!");
 	    if (c == true) {
 	    	window.location.reload()
 	    }
