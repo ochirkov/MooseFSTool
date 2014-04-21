@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+{% block body %}
+	<h3>{{ log_file }}</h3>
+	<div class="row-fluid">
+		<div class="span9">
+			<div class="file-text">
+				{% for line in log_content %}
+					{{ line|safe }}<br/>
+				{% endfor %}
+			</div>
+    		{% if page %}
+	    		<div class="pagination pagination-centered">
+					<ul>
+						<li class="{% if not prev %}disabled{% endif %}">
+							<a href="{% if prev %}{{ url_for('log_viewer1', page=prev)}}{% else %}#{% endif %}">Prev</a>
+						</li>
+						{% for p in pages %}
+							{% if page < p+2 and page > p-2 or loop.last or loop.first %}
+								<li class="{% if p == page %}disabled{% endif %}">
+									<a href="{{ url_for('log_viewer1', page=p)}}">{{ p }}</a>
+								</li>
+							{% elif page == p+2 or page == p-2 %}
+								<li class="disabled"><a href="#">...</a></li>
+							{% endif %}
+						{% endfor %}
+						<li class="{% if not next %}disabled{% endif %}">
+							<a href="{% if next %}{{ url_for('log_viewer1', page=next)}}{% else %}#{% endif %}">Next</a>
+						</li>
+					</ul>
+				</div>
+			{% endif %}
+		</div>
+		<div class="span3">
+			{% if not page %}
+				<a href="{{ url_for('log_viewer1', page=1)}}" class="btn btn-info"> Show pages</a>
+			{% else %}
+				<a href="{{ url_for('log_viewer1', page=0)}}" class="btn btn-info"> Show full log</a>
+			{% endif %}
+			<a href="#" class="btn btn-success"> Download log</a>
+		</div>
+	</div>
+{% endblock %}

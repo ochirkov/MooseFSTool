@@ -14,7 +14,8 @@
 										 ("chunkservers", "Chunkservers"),
 										 ("metaloggers", "Metaloggers"),
 										 ("data", "Data"),
-										 ("trash", "Trash")] %}
+										 ("trash", "Trash"),
+										 ("log_viewer", "Log Viewer")] %}
 						<li {% if title == item %}class="active"{% endif %}><a href="{{ url_for(url) }}">{{ item }}</a></li>
 					{% endfor %}
 				</ul>
