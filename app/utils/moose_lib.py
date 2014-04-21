@@ -45,7 +45,7 @@ class MooseFS():
 
     def __init__(self, masterhost='mfsmaster', masterport=9421):
         self.masterhost = masterhost
-        self.masterport = masterport
+        self.masterport = int(masterport)
         self.masterversion = self.check_master_version()
 
 
@@ -64,7 +64,7 @@ class MooseFS():
             totalsent = totalsent + sent
 
     def myrecv(self, socket, leng):
-        msg = ''
+        msg = b''
         while len(msg) < leng:
             chunk = socket.recv(leng-len(msg))
             if chunk == '':
