@@ -41,7 +41,6 @@ class Connect(object):
         self.user = user
         self.password = password
         self.private_key_file = private_key_file
-        self.remote_auth_type = remote_auth['auth_type']
         self.remote_auth_passwd = remote_auth['passwd']
         self.ssh = self.connect()
         self.remote = self._sftp_connect()
@@ -54,16 +53,12 @@ class Connect(object):
         >>> obj._connect(ssh_client)
         """
         try:
-            if self.remote_auth_type == 'pwd':
-                ssh_client.connect(self.host, username=self.user, password=self.password)
-
-            elif self.remote_auth_type == 'key':
-                if not self.remote_auth_passwd:
-                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
-
-                elif self.remote_auth_type == 'key' and self.remote_auth_passwd:
+            if self.remote_auth_passwd:
                     ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
                                        password=self.password)
+            else:
+                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
+
         except Exception as e:
             msg = 'Error during ssh client connect: %s' % str(e)
             logger.error(e)
