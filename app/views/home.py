@@ -18,7 +18,7 @@ def index():
 @login_required
 def home():
     host = roots['master_host']
-    port = roots.get('master_port', 9421)
+    port = int(roots.get('master_port', 9421))
     chunkservers = [{'ip':'192.168.56.12' + str(i), 'name' : 'chunkserver'} for i in range(3)]
     metaloggers = [{'ip':'192.168.56.13' + str(i), 'name' : 'metalogger'} for i in range(10)]
     clients = [{'ip':'192.168.56.14' + str(i), 'name' : 'client'} for i in range(10)]
