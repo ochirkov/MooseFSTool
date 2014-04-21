@@ -22,7 +22,7 @@ def create_targz(path_to_archive, source_data, suffix='backup'):
     E.g.: 05042014_152340_backup.tar.gz
     """
     archive_name = os.path.join(path_to_archive,
-                                datetime.datetime.now().strftime("%d%m%Y-%H%M%S") + \
+                                datetime.datetime.now().strftime("%d-%m-%Y--%H-%M-%S") + \
                                 '_' + suffix + '.tar.gz')
     try:
         tar = tarfile.open(archive_name, "w:gz")
