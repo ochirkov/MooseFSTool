@@ -5,75 +5,65 @@ from app.utils.config_helper import logging
 
 import re
 
-@app.route('/log_viewer', methods = ['GET', 'POST'])
+@app.route('/log_viewer', methods = ['GET'])
 @login_required
-def log_viewer():
-    """
-    Returns log content with two parameters:
-    page:
-        0 - all content
-        number - page number
-    view_direction:
-        0 - normal order
-        1 - reversed order
-    """
-    page = 1
-    log_file = logging['path']
-    with open(log_file, 'r') as log:
-        lines = log.readlines()
-        start, end = -24, len(lines)
-        log_content = [re.sub(r' {2}', r'&nbsp;'*4, line) \
-                                    for line in lines[start:end]]
-    return render_template('log-viewer.html',
-                           page = page,
-                           log_file = log_file,
-                           log_content = log_content,
-                           title = 'Log Viewer')
+def log():
+    return redirect(url_for('log_viewer', page=1))
 
-@app.route('/log_viewer/<page>', methods = ['GET', 'POST'])
+@app.route('/log_viewer/<page>', methods = ['GET'])
 @login_required
-def log_viewer1(page):
+def log_viewer(page):
     page = int(page)
     lines_per_page = 20
     log_file = logging['path']
     with open(log_file, 'r') as log:
         lines = log.readlines()
-        length = len(lines)
-        pag = get_pagination_info(length, int(page)
-                                  , lines_per_page)
-        if int(page):
-            start, end = pag['start'], pag['end']
-        else:
+        l = len(lines)
+        pag = get_pagination_info(page, l, lines_per_page)
+        if page == 0: # show full log
             start = 0
-            end = len(lines)
+            end = l
+        elif page > 0 and page <= pag['last']:
+            start, end = get_indexes(page, l, lines_per_page)
+        else: # page is out of range
+            return redirect(url_for('log_viewer', page=1))
         log_content = reversed([re.sub(r' {2}', r'&nbsp;'*4, line) \
                                     for line in lines[start:end]])
     
     return render_template('log-viewer.html',
-                           page = page,
-                           pages = pag['pages'],
-                           next = pag['next'],
-                           prev = pag['prev'],
+                           pag = pag,
                            log_file = log_file,
                            log_content = log_content,
                            title = 'Log Viewer')
 
-
-def get_pagination_info(lst_length, page, lines_per_page):
-    page = int(page)
-    max_pages = 8
-    pages = [i+1 for i, n in enumerate(range(0, lst_length, lines_per_page))]
-    next = 0
-    prev = 0
-    if len(pages) > max_pages:
-        if page > 0:
-            prev = page - 1
-        if page < pages[-1]:
-            next = page + 1
+def get_indexes(page, lines_amount, lines_per_page):
+    """
+    Returns:
+    start, end - list indexes for slicing of a list with lines from input file
+    """
     start = -lines_per_page*page
-    end = start + lines_per_page if start + lines_per_page != 0 else lst_length
+    end = start + lines_per_page if start + lines_per_page != 0 else lines_amount
+    return start, end
+
+def get_pagination_info(page, lines_amount, lines_per_page):
+    """
+    Input: page - current page, lines_amount - number of lines in file,
+    lines_per_page - amount of lines that should be on one page
+    
+    Returns dictionary with keys:
+    pages - list with page numbers, page - current page, last - number of last page
+    prev, next - previous and next page numbers. If prev is 0, "Prev" link is
+                 disabled; if next is 0, "Next" link is disabled
+    """
+    pages = [i+1 for i, n in enumerate(range(0, lines_amount, lines_per_page))]
+    last = pages[-1]
+    prev = page-1
+    if page < last:
+        next = page + 1
+    else:
+        next = 0
     return {'pages' : pages,
+            'page' : page,
             'next' : next,
             'prev' : prev,
-            'start' : start,
-            'end' : end}
+            'last' : last}
