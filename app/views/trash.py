@@ -4,6 +4,8 @@ from app.utils import transport
 from app.utils.config_helper import roots
 from app.decorators import login_required
 from stat import S_ISDIR
+from app.utils.mfs_exceptions import MooseConnectionFailed
+from app.utils.useful_functions import nl2br
 
 import os
 import hashlib
@@ -12,20 +14,26 @@ import hashlib
 @app.route('/trash', methods = ['GET', 'POST'])
 @login_required
 def trash():
+    tree = None
+    errors = {}
     host = roots['master_host']
     port = roots.get('master_port', 9421)
-    con = transport.Connect(host)
-    path = '/mnt/mfs-test'
-    tree = make_remote_tree(con, path)
-    errors = {}
-    command = '/usr/bin/mfsmount /mnt/mfs-test -H mfsmaster -o mfsmeta'
-    resp = con.remote_command(command, 'stdout')
-    if resp:
-        errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
-    
-    if request.method == 'POST':
-        return render_template('data/files_items.html',
-                               tree = make_remote_tree(con, request.values['full_name']))
+    try:
+        con = transport.Connect(host)
+    except MooseConnectionFailed as e:
+        errors['connection'] = (nl2br(str(e)), )
+    else:
+        path = '/mnt/mfs-test'
+        tree = make_remote_tree(con, path)
+        
+        command = '/usr/bin/mfsmount /mnt/mfs-test -H mfsmaster -o mfsmeta'
+        resp = con.remote_command(command, 'stdout')
+        if resp:
+            errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
+        
+        if request.method == 'POST':
+            return render_template('data/files_items.html',
+                                   tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('trash.html',
                            errors = errors,

@@ -60,7 +60,11 @@ class Connect(object):
                     ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
 
         except Exception as e:
-            msg = 'Error during ssh client connect: %s' % str(e)
+            msg = "\n".join(['ssh connection failed with the following error:\n%s' % str(e),
+                             'CONNECTION DETAILS:',
+                             'host: %s' % self.host,
+                             'username: %s' % self.user,
+                             'private key file: %s' % self.private_key_file])
             logger.error(e)
             raise mfs_exceptions.MooseConnectionFailed(msg)
 

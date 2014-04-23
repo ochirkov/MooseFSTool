@@ -46,7 +46,11 @@ function send_post(event, full_name, action, is_dir) {
 <div class="row-fluid">
 	{% if errors %}
 		<div class="alert alert-error">
-			{{ errors.data_path }}
+			{% for k in errors %}
+				{% for e in errors[k] %}
+					{{ e|safe }}<br/>
+				{% endfor %}
+			{% endfor %}
 		</div>
 	{% else %}
 	<div class="span6">

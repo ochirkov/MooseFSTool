@@ -10,6 +10,8 @@ from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
 from app.utils.validate_creds import creds_validator
 from collections import OrderedDict
+from app.utils.mfs_exceptions import MooseConnectionFailed
+from app.utils.useful_functions import nl2br
 import os
 import re
 import sys
@@ -26,34 +28,39 @@ CONFIGS = {
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
 def master():
+    config_path, configs, meta_path, metafiles, master_info, backup_form = (None,)*6
     errors = {}
     host = roots['master_host']
     port = roots.get('master_port', 9421)
-    con = transport.Connect(host)
-    backup_form = BackupForm(request.form)
-    
-    master_info, errors          = get_master_info(host, port, errors)
-    config_path, configs, errors = get_config_info(con, errors)
-    meta_path, metafiles, errors = get_meta_info(con, errors, config_path)
-
-    if request.method == 'POST':
-        if 'action' in request.values: # save or edit config
-            action = request.values['action']
-            return globals()[action + '_config'](con, config_path,
-                                                 request.values['config_name'])
+    try:
+        con = transport.Connect(host)
+    except MooseConnectionFailed as e:
+        errors['connection'] = (nl2br(str(e)), )
+    else:
+        backup_form = BackupForm(request.form)
         
-        else:                          # backup request
-            path = backup_form.path.data
-            if con.path_exists(path):
-                err = create_targz(path, meta_path, suffix='mfs_metadata')
-                if err:
-                    backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
+        master_info, errors          = get_master_info(host, port, errors)
+        config_path, configs, errors = get_config_info(con, errors)
+        meta_path, metafiles, errors = get_meta_info(con, errors, config_path)
+    
+        if request.method == 'POST':
+            if 'action' in request.values: # save or edit config
+                action = request.values['action']
+                return globals()[action + '_config'](con, config_path,
+                                                     request.values['config_name'])
+            
+            else:                          # backup request
+                path = backup_form.path.data
+                if con.path_exists(path):
+                    err = create_targz(path, meta_path, suffix='mfs_metadata')
+                    if err:
+                        backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
+                    else:
+                        return redirect(url_for('master'))
                 else:
-                    return redirect(url_for('master'))
-            else:
-                backup_form.path.errors += ('This path does not exist.',)
-    if PY3:
-        master_info.iteritems = master_info.items
+                    backup_form.path.errors += ('This path does not exist.',)
+        if PY3:
+            master_info.iteritems = master_info.items
     return render_template('master/master.html',
                            config_path = config_path,
                            configs = configs,

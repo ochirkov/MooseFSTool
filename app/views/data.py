@@ -6,6 +6,8 @@ from app.utils.log_helper import logger
 from app.utils import mfs_exceptions
 from app.decorators import login_required
 from app.views.trash import make_remote_tree
+from app.utils.mfs_exceptions import MooseConnectionFailed
+from app.utils.useful_functions import nl2br
 
 
 import os
@@ -15,21 +17,26 @@ import hashlib
 @app.route('/data', methods = ['GET', 'POST'])
 @login_required
 def data():
+    tree, path = None, None
     errors = {}
     host = roots['master_host']
-    con = transport.Connect(host)
-    path = get_data_path(con)
-    tree= {}
-    if not path:
-        errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
+    try:
+        con = transport.Connect(host)
+    except MooseConnectionFailed as e:
+        errors['connection'] = (nl2br(str(e)), )
     else:
-        command = 'mfsmount %s' % path
-        resp = con.remote_command(command, 'stdout')
-        tree = make_remote_tree(con, path)
-        
-        if request.method == 'POST':
-            return render_template('data/files_items.html',
-                                   tree = make_remote_tree(con, request.values['full_name']))
+        path = get_data_path(con)
+        tree= {}
+        if not path:
+            errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
+        else:
+            command = 'mfsmount %s' % path
+            resp = con.remote_command(command, 'stdout')
+            tree = make_remote_tree(con, path)
+            
+            if request.method == 'POST':
+                return render_template('data/files_items.html',
+                                       tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('data/data.html',
                            tree = tree,
