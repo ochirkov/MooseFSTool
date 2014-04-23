@@ -117,3 +117,14 @@ img.bordered:hover, img.bordered:focus {
 	border-right: 1px solid #DDD;
 	overflow:visible;
 }
+
+div.file-text {
+	border: solid 1px #DADADA;
+	background-color: #F5F5F5;
+	/*position: absolute;*/
+	padding: 10px;
+	width: auto;
+	height: 400px;
+	overflow: auto; 
+	border-radius: 6px;
+}
