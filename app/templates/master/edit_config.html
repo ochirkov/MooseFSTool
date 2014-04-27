@@ -3,7 +3,7 @@
 </div>
 <form>
 	<textarea id="id_config_text" style="width: 600px; height: 400px;" name="content">{{ filecontent }}</textarea><br/>
-	<label>Type root password:</label><input type="password" name="root_passwd" id="id_root_passwd"/><br/>
+	<!-- <label>Type root password:</label><input type="password" name="root_passwd" id="id_root_passwd"/><br/> -->
 	<input type="submit" class="btn btn-success" onclick="confirm_save(event, '{{ filename }}')" value="Save"/>
 	<a href="#" onclick="confirm_cancel(event)" class="btn">Cancel</a>
 </form>

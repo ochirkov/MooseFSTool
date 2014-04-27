@@ -9,9 +9,11 @@ from app.utils.backup_helper import create_targz
 from app.utils.log_helper import logger
 from app.utils.moose_lib import MooseFS
 from app.utils.validate_creds import creds_validator
-from collections import OrderedDict
 from app.utils.mfs_exceptions import MooseConnectionFailed
 from app.utils.useful_functions import nl2br
+
+from collections import OrderedDict
+
 import os
 import re
 import sys
@@ -179,7 +181,7 @@ def save_config(connection, path, config_name):
     """
     new_content = request.values.get('content', '')
     root_passwd = request.values.get('root_passwd', '')
-    if root_passwd and creds_validator('root', root_passwd) and new_content:
+    if new_content:
         try:
             f = connection.get_file(os.path.join(path, config_name), 'w')
         except Exception as e:
