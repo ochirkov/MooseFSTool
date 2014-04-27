@@ -2,16 +2,9 @@ from flask import render_template, redirect, request, url_for
 from app import app
 from app.forms import BackupForm
 from app.decorators import login_required
-from app.utils import mfs_exceptions
-from app.utils import transport
-from app.utils.config_helper import roots
-from app.utils.backup_helper import create_targz
+from app.utils import mfs_exceptions, transport, config_helper, moose_lib, \
+                      backup_helper, useful_functions
 from app.utils.log_helper import logger
-from app.utils.moose_lib import MooseFS
-from app.utils.validate_creds import creds_validator
-from app.utils.mfs_exceptions import MooseConnectionFailed
-from app.utils.useful_functions import nl2br
-
 from collections import OrderedDict
 
 import os
@@ -32,12 +25,12 @@ CONFIGS = {
 def master():
     config_path, configs, meta_path, metafiles, master_info, backup_form = (None,)*6
     errors = {}
-    host = roots['master_host']
-    port = roots.get('master_port', 9421)
+    host = config_helper.roots['master_host']
+    port = config_helper.roots.get('master_port', 9421)
     try:
         con = transport.Connect(host)
-    except MooseConnectionFailed as e:
-        errors['connection'] = (nl2br(str(e)), )
+    except mfs_exceptions.MooseConnectionFailed as e:
+        errors['connection'] = (useful_functions.nl2br(str(e)), )
     else:
         backup_form = BackupForm(request.form)
         
@@ -54,7 +47,7 @@ def master():
             else:                          # backup request
                 path = backup_form.path.data
                 if con.path_exists(path):
-                    err = create_targz(path, meta_path, suffix='mfs_metadata')
+                    err = backup_helper.create_targz(path, meta_path, suffix='mfs_metadata')
                     if err:
                         backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
                     else:
@@ -84,7 +77,7 @@ def get_config_info(connection, errors, files_list=CONFIGS.values()):
     config_path = ''
     configs = []
     try:
-        config_path = roots['config_path']
+        config_path = config_helper.roots['config_path']
     except KeyError:
         msg = 'Cannot get \"config_path\" option from moosefs_tool.ini'
         logger.error(mfs_exceptions.ConfigsException(msg))
@@ -209,8 +202,8 @@ def get_master_info(host, port, errors):
     errors['master_info'] = []
     version = ''
     try:
-        mfs = MooseFS(masterhost=host,
-                      masterport=int(port))
+        mfs = moose_lib.MooseFS(masterhost=host,
+                                masterport=int(port))
         version = mfs.masterversion
     except Exception as e:
         errors['master_info'].append('Error while trying to connect to %s:%s<br/>%s'\
