@@ -32,11 +32,11 @@
 		</div>
 		<div class="span3">
 			{% if not pag.page %}
-				<a href="{{ url_for('log_viewer', page=1)}}" class="btn btn-info"> Show pages</a>
+				<a href="{{ url_for('log_viewer', page=1)}}" class="btn btn-info"> Paginate log</a>
 			{% else %}
 				<a href="{{ url_for('log_viewer', page=0)}}" class="btn btn-info"> Show full log</a>
 			{% endif %}
-			<a href="#" class="btn btn-success"> Download log</a>
+			<!-- <a href="#" class="btn btn-success"> Download log</a> -->
 		</div>
 	</div>
 {% endblock %}
