@@ -2,14 +2,11 @@ from flask import render_template, redirect, request, url_for
 from app import app
 from app.forms import BackupForm
 from app.decorators import login_required
-from app.utils import mfs_exceptions
-from app.utils import transport
-from app.utils.config_helper import roots
-from app.utils.backup_helper import create_targz
+from app.utils import mfs_exceptions, transport, config_helper, moose_lib, \
+                      backup_helper, useful_functions
 from app.utils.log_helper import logger
-from app.utils.moose_lib import MooseFS
-from app.utils.validate_creds import creds_validator
 from collections import OrderedDict
+
 import os
 import re
 import sys
@@ -26,34 +23,39 @@ CONFIGS = {
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
 def master():
+    config_path, configs, meta_path, metafiles, master_info, backup_form = (None,)*6
     errors = {}
-    host = roots['master_host']
-    port = roots.get('master_port', 9421)
-    con = transport.Connect(host)
-    backup_form = BackupForm(request.form)
-    
-    master_info, errors          = get_master_info(host, port, errors)
-    config_path, configs, errors = get_config_info(con, errors)
-    meta_path, metafiles, errors = get_meta_info(con, errors, config_path)
-
-    if request.method == 'POST':
-        if 'action' in request.values: # save or edit config
-            action = request.values['action']
-            return globals()[action + '_config'](con, config_path,
-                                                 request.values['config_name'])
+    host = config_helper.roots['master_host']
+    port = config_helper.roots.get('master_port', 9421)
+    try:
+        con = transport.Connect(host)
+    except mfs_exceptions.MooseConnectionFailed as e:
+        errors['connection'] = (useful_functions.nl2br(str(e)), )
+    else:
+        backup_form = BackupForm(request.form)
         
-        else:                          # backup request
-            path = backup_form.path.data
-            if con.path_exists(path):
-                err = create_targz(path, meta_path, suffix='mfs_metadata')
-                if err:
-                    backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
+        master_info, errors          = get_master_info(host, port, errors)
+        config_path, configs, errors = get_config_info(con, errors)
+        meta_path, metafiles, errors = get_meta_info(con, errors, config_path)
+    
+        if request.method == 'POST':
+            if 'action' in request.values: # save or edit config
+                action = request.values['action']
+                return globals()[action + '_config'](con, config_path,
+                                                     request.values['config_name'])
+            
+            else:                          # backup request
+                path = backup_form.path.data
+                if con.path_exists(path):
+                    err = backup_helper.create_targz(path, meta_path, suffix='mfs_metadata')
+                    if err:
+                        backup_form.path.errors += ('Exception occured while creating backup:<br>%s.' % err,)
+                    else:
+                        return redirect(url_for('master'))
                 else:
-                    return redirect(url_for('master'))
-            else:
-                backup_form.path.errors += ('This path does not exist.',)
-    if PY3:
-        master_info.iteritems = master_info.items
+                    backup_form.path.errors += ('This path does not exist.',)
+        if PY3:
+            master_info.iteritems = master_info.items
     return render_template('master/master.html',
                            config_path = config_path,
                            configs = configs,
@@ -75,7 +77,7 @@ def get_config_info(connection, errors, files_list=CONFIGS.values()):
     config_path = ''
     configs = []
     try:
-        config_path = roots['config_path']
+        config_path = config_helper.roots['config_path']
     except KeyError:
         msg = 'Cannot get \"config_path\" option from moosefs_tool.ini'
         logger.error(mfs_exceptions.ConfigsException(msg))
@@ -172,7 +174,7 @@ def save_config(connection, path, config_name):
     """
     new_content = request.values.get('content', '')
     root_passwd = request.values.get('root_passwd', '')
-    if root_passwd and creds_validator('root', root_passwd) and new_content:
+    if new_content:
         try:
             f = connection.get_file(os.path.join(path, config_name), 'w')
         except Exception as e:
@@ -200,8 +202,8 @@ def get_master_info(host, port, errors):
     errors['master_info'] = []
     version = ''
     try:
-        mfs = MooseFS(masterhost=host,
-                      masterport=int(port))
+        mfs = moose_lib.MooseFS(masterhost=host,
+                                masterport=int(port))
         version = mfs.masterversion
     except Exception as e:
         errors['master_info'].append('Error while trying to connect to %s:%s<br/>%s'\
