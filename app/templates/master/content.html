@@ -1,24 +1,3 @@
-<script>
-$(document).ready(function() 
-    { 
-        $("#metaTable").tablesorter({
-        	sortList: [[0,0]]
-        }); 
-    } 
-); 
-
-function edit_request(event, config_name) {
-	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-	$.post("", {
-		config_name : config_name,
-		action : 'edit',
-        csrfmiddlewaretoken: getCookie('csrftoken'),
-        },function(data) {
-            $('#id_content').html(data);
-        }
-	);
-}
-</script>
 <div class="row-fluid">
 	<div class="span4">
 	<h3>{{ title }} info </h3>
@@ -116,7 +95,7 @@ function edit_request(event, config_name) {
 				{% endfor %}
 			</div>
 		{% else %}
-		    <table class="table zebra-striped" id="metaTable" style="cursor: hand">
+		    <table class="table zebra-striped sorted-table" id="metaTable" style="cursor: hand">
 		    	<thead>
 			    	<tr>
 			    		<th>Name</th>

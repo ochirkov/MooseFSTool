@@ -1,37 +1,3 @@
-<script>
-	function confirm_save(event, config_name) {
-		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-	    var content = $('#id_config_text').val()
-	    var root_passwd = $('#id_root_passwd').val()
-	    var c=confirm("Do you realy want to save file {{ filename }}?");
-	    if (c == true) {
-			$.post("", {
-		        config_name : config_name,
-		        content : content,
-		        root_passwd : root_passwd,
-		        action : 'save',
-		        csrfmiddlewaretoken: getCookie('csrftoken'),
-		        },function(data) {
-		        	if (data == '') {
-		            	window.location.reload();
-		           }
-		           else {
-		           		$('#id_error_div').removeClass('hidden')
-		           		$('#id_error_div').html(data)
-		           }
-		        }
-			);
-		}
-		
-	}
-	function confirm_cancel(event) {
-		(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
-		var c=confirm("Do you really want to discard changes in {{ filename }}? All changes will be lost!");
-	    if (c == true) {
-	    	window.location.reload()
-	    }
-	}
-</script>
 <h5>{{ filename }}</h5>
 <div class="alert alert-error hidden" id="id_error_div">
 </div>
