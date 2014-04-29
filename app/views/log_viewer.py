@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for
 from app import app
 from app.decorators import login_required
-from app.utils.log_helper import LOG_TYPE, LOG_PATH
+from app.utils.log_helper import LOG_TYPE, LOG_PATH, LOG_APP_LABEL
 
 import re
 
@@ -19,7 +19,7 @@ def log_viewer(page):
     with open(log_file, 'r') as log:
         lines = log.readlines()
         if LOG_TYPE == 'syslog':
-            lines = filter(lambda x: 'moosefstool' in x, lines)
+            lines = filter(lambda x: LOG_APP_LABEL in x, lines)
         l = len(lines)
         pag = get_pagination_info(page, l, lines_per_page)
         if page == 0: # show full log
