@@ -316,48 +316,47 @@ class MooseFS():
             s.close()
 
 
-#     def mfs_backup_servers(self):
-#         # Return list of metaloggers servers
-#         metaloggers = []
-#
-# #        if self.masterversion >= (1, 6, 5):
-#         try:
-#             s = self.bind_to_master()
-#             self.mysend(s, struct.pack(">LL", 522, 0))
-#             header = self.myrecv(s, 8)
-#             cmd, length = struct.unpack(">LL", header)
-#             if cmd == 523 and (length % 8) == 0:
-#                 data = self.myrecv(s, length)
-#                 n = length/8
-#                 for i in xrange(n):
-#                     d = data[i*8:(i+1)*8]
-#                     v1, v2, v3, ip1, ip2, ip3, ip4 = struct.unpack(">HBBBBBB", d)
-#                     ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
-#                     ver = '.'.join([str(v1), str(v2), str(v3)])
-#                     try:
-#                         host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
-#                     except Exception as e:
-#                         host = "(unresolved)"
-#                         msg = 'Error during server hostname getting %s' % str(e)
-#                         logger.error(msg)
-#                         raise mfs_exceptions.MooseError(msg)
-#
-#                     metaloggers.append({ 'host': host,
-#                                          'ip':   ip
-#                                 })
-#                     return metaloggers
-#
-#         except Exception as e:
-#             msg = 'Error during connect to master: %s' % str(e)
-#             logger.error(msg)
-#             raise mfs_exceptions.MooseConnectionFailed(msg)
-#         finally:
-#             s.close()
+    def mfs_backup_servers(self):
+        # Return list of metaloggers servers
+        metaloggers = []
 
-        # else:
-        #         msg = 'Error during metaloggers list obtainig. Check master version, it could be obsolite'
-        #         logger.error(msg)
-        #         raise mfs_exceptions.MooseError(msg)
+        try:
+            s = self.bind_to_master()
+            self.mysend(s, struct.pack(">LL", 522, 0))
+            header = self.myrecv(s, 8)
+            cmd, length = struct.unpack(">LL", header)
+            if cmd == MATOCL_MLOG_LIST and (length % 8) == 0:
+                data = self.myrecv(s, length)
+                n = length/8
+                for i in xrange(n):
+                    d = data[i*8:(i+1)*8]
+                    v1, v2, v3, ip1, ip2, ip3, ip4 = struct.unpack(">HBBBBBB", d)
+                    ip = '.'.join([str(ip1), str(ip2), str(ip3), str(ip4)])
+                    ver = '.'.join([str(v1), str(v2), str(v3)])
+                    try:
+                        host = (socket.gethostbyaddr("%u.%u.%u.%u" % (ip1, ip2, ip3, ip4)))[0]
+                    except Exception as e:
+                        host = "(unresolved)"
+                        msg = 'Error during server hostname getting %s' % str(e)
+                        logger.error(msg)
+                        raise mfs_exceptions.MooseError(msg)
+
+                    metaloggers.append({ 'host': host,
+                                         'ip':   ip
+                                })
+                    return metaloggers
+            else:
+                msg = 'Error during metaloggers list obtainig. Check master version, it could be obsolite'
+                logger.error(msg)
+                raise mfs_exceptions.MooseError(msg)
+
+        except Exception as e:
+            msg = 'Error during connect to master: %s' % str(e)
+            logger.error(msg)
+            raise mfs_exceptions.MooseConnectionFailed(msg)
+
+        finally:
+            s.close()
 
 
     def mfs_mounts(self):
