@@ -384,21 +384,6 @@ class MooseFS():
                     path = data[pos:pos+pleng]
                     pos += pleng
 
-                    sesflags, rootuid, rootgid, mapalluid, mapallgid, mingoal, maxgoal, mintrashtime, \
-                    maxtrashtime = struct.unpack(">BLLLLBBLL", data[pos:pos+27])
-                    pos += 27
-                    if mingoal <= 1 and maxgoal >= 9:
-                        mingoal = None
-                        maxgoal = None
-                    if mintrashtime == 0 and maxtrashtime == 0xFFFFFFFF:
-                        mintrashtime = None
-                        maxtrashtime = None
-
-                    pos += 8 * statscnt
-                    if path == '.':
-                        meta = 1
-                    else:
-                        meta = 0
                     try:
                         host = (socket.gethostbyaddr(ipnum))[0]
                     except Exception:
