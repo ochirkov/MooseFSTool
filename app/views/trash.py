@@ -2,36 +2,39 @@ from flask import render_template, redirect, request, url_for
 from app import app
 from app.utils import transport, config_helper, mfs_exceptions, useful_functions
 from app.decorators import login_required
-from app.views.data import make_remote_tree
+from app.views.data import make_remote_tree, isdir
 
 import os
 
 @app.route('/trash', methods = ['GET', 'POST'])
 @login_required
 def trash():
-    tree = None
+    tree = []
     errors = {}
     host = config_helper.roots['master_host']
     port = config_helper.roots.get('master_port', 9421)
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
-        errors['connection'] = (useful_functions.nl2br(str(e)), )
+        errors['connection'] = useful_functions.nl2br(str(e))
     except Exception as e:
         pass
     else:
         trash_path = os.path.join(config_helper.roots['trash_path'], 'trash')
-        tree = make_remote_tree(con, trash_path)
-        
-        command = '/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path
-        resp = con.remote_command(command, 'stdout')
-        if resp:
-            errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
-        
-        if request.method == 'POST':
-            return render_template('trash/trash_tree.html',
-                                   post_url = '/trash/info',
-                                   tree = make_remote_tree(con, request.values['full_name']))
+        if not isdir(con, trash_path):
+            errors['mount'] = 'Path \"%s\" does not mounted.' % trash_path
+        else:
+            tree = make_remote_tree(con, trash_path)
+            
+            command = '/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path
+            resp = con.remote_command(command, 'stdout')
+            if resp:
+                errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
+            
+            if request.method == 'POST':
+                return render_template('trash/trash_tree.html',
+                                       post_url = '/trash/info',
+                                       tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('trash/trash.html',
                            post_url = '/trash/info',

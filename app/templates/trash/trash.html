@@ -4,9 +4,10 @@
 		<div class="span6">
 			<h3>{{ path }}</h3>
 			
-			{% if errors.mount %}
+			{% if errors %}
 				<div class="alert alert-error">
 					{{ errors.mount|safe }}
+					{{ errors.connection|safe }}
 				</div>
 			{% endif %}
 			
@@ -16,10 +17,6 @@
 				</div>
 			{% elif tree|length > 1 %}
 				{% include 'trash/trash_tree.html' %}
-			{% else %}
-				<div class="alert alert-error">
-					{{ path }} dirrectory is empty
-				</div>
 			{% endif %}
 		</div>
 		
