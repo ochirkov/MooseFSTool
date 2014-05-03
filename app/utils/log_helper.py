@@ -3,6 +3,11 @@ from logging.handlers import SysLogHandler
 from logging import FileHandler, Formatter
 from app.utils.config_helper import logging as LOG
 
+LOG_TYPE = LOG.get('type')
+LOG_PATH = LOG.get('path', '/var/log/moosetool.log') \
+                if LOG_TYPE == 'file' else '/var/log/syslog'
+LOG_APP_LABEL = 'moosefstool'
+
 def get_logger():
 
     """
@@ -15,15 +20,15 @@ def get_logger():
     logger = logging.getLogger()
     logger.setLevel(logging.ERROR)
 
-    formatter = Formatter('%(asctime)s - - %(name)s: %(levelname)s %(message)s')
-
-    if LOG.get('type') == 'file':
-        log_handler = FileHandler(filename='/var/log/moosetool.log')
-    elif LOG.get('type') == 'syslog':
+    if LOG_TYPE == 'file':
+        formatter = Formatter('%(asctime)s - - %(name)s: %(levelname)s %(message)s')
+        log_handler = FileHandler(filename=LOG_PATH)
+    elif LOG_TYPE == 'syslog':
+        formatStr = '%(asctime)s {0} - - %(name)s: %(levelname)s %(message)s'.format(LOG_APP_LABEL)
+        formatter = Formatter(formatStr)
         log_handler = SysLogHandler(address='/dev/log')
 
     log_handler.setFormatter(formatter)
-
     logger.addHandler(log_handler)
 
     return logger
