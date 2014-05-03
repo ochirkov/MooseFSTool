@@ -30,10 +30,12 @@ def data():
             tree = make_remote_tree(con, path)
             
             if request.method == 'POST':
-                return render_template('data/files_items.html',
+                return render_template('data/files_tree.html',
+                                       post_url = "/data/info",
                                        tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('data/data.html',
+                           post_url = "/data/info",
                            tree = tree,
                            path = path,
                            errors = errors,
@@ -44,21 +46,16 @@ def data():
 def get_file_info():
     host = config_helper.roots['master_host']
     con = transport.Connect(host)
-    if request.method == "POST":
-        action = request.values['action']
-        data = ''
-        if action == 'mfsfileinfo':
-            data = con.remote_command('mfsfileinfo %s' % request.values['full_name'], 'stdout')
-        elif action == 'mfscheckfile':
-            data = con.remote_command('mfscheckfile %s' % request.values['full_name'], 'stdout')
-        elif action == 'mfsdirinfo':
-            data = con.remote_command('mfsdirinfo %s' % request.values['full_name'], 'stdout')
-        return render_template('data/getinfo.html',
-                               full_name = request.values['full_name'],
-                               is_dir = request.values['is_dir'],
-                               action = action,
-                               data = data
-                               )
+    # possible action's types: mfsdirinfo, mfsfileinfo, mfscheckfile
+    action = str(request.values['action'])
+    data = con.remote_command('%s %s' % (action, request.values['full_name']), 'stdout')
+    return render_template('data/getinfo.html',
+                           post_url = "/data/info",
+                           full_name = request.values['full_name'],
+                           is_dir = request.values['is_dir'],
+                           action = action,
+                           data = data
+                           )
 
 def get_data_path(connection):
     """

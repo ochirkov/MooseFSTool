@@ -2,18 +2,18 @@
 	<ul class="nav nav-tabs">
 		{% if is_dir == 'true' %}
 			<li class="{% if action == 'mfsdirinfo' %}active{% endif %}">
-				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfsdirinfo', true)">
+				<a href="#" onclick="send_post(event, '{{ post_url }}', '{{ full_name }}', 'mfsdirinfo', true)">
 					<strong>mfsdirinfo</strong>
 				</a>
 			</li>
 		{% else %}
 			<li class="{% if action == 'mfsfileinfo' %}active{% endif %}">
-				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfsfileinfo', false)">
+				<a href="#" onclick="send_post(event, '{{ post_url }}', '{{ full_name }}', 'mfsfileinfo', false)">
 					<strong>mfsfileinfo</strong>
 				</a>
 			</li>
 			<li class="{% if action == 'mfscheckfile' %}active{% endif %}">
-				<a href="#" onclick="send_post(event, '{{ full_name }}', 'mfscheckfile', false)">
+				<a href="#" onclick="send_post(event, '{{ post_url }}', '{{ full_name }}', 'mfscheckfile', false)">
 					<strong>mfscheckfile</strong>
 				</a>
 			</li>

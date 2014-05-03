@@ -83,15 +83,18 @@ function open_folder(event, id, full_name) {
 	}
 }
 
-function send_post(event, full_name, action, is_dir) {
+function send_post(event, post_url, full_name, action, is_dir) {
 	(event.preventDefault) ? event.preventDefault() : event.returnValue = false;
 	$("#loading_info").removeClass('hidden')
-	$.post("/data/info", {
+	$.post(post_url, {
         full_name : full_name,
         action : action,
         is_dir : is_dir,
         csrfmiddlewaretoken: getCookie('csrftoken'),
         },function(data) {
+        	if (data == '') {
+        		window.location.reload();
+        	}
               $('#get_info_div').html(data);
               $("#loading_info").addClass('hidden')
         }
