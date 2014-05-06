@@ -1,5 +1,6 @@
 from flask.ext.wtf import Form
 from wtforms import TextField, validators, PasswordField
+from app.utils.config_helper import roots
 
 class LoginForm(Form):
     
@@ -13,4 +14,5 @@ class LoginForm(Form):
 class BackupForm(Form):
     
     path = TextField(label='path to backup',
+                     default = roots.get('backup_path', ''),
                       validators=[validators.Required()])

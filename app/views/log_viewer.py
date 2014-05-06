@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for
 from app import app
 from app.decorators import login_required
-from app.utils.config_helper import logging
+from app.utils.log_helper import LOG_TYPE, LOG_PATH, LOG_APP_LABEL
 
 import re
 
@@ -15,9 +15,11 @@ def log():
 def log_viewer(page):
     page = int(page)
     lines_per_page = 20
-    log_file = logging['path']
+    log_file = LOG_PATH
     with open(log_file, 'r') as log:
         lines = log.readlines()
+        if LOG_TYPE == 'syslog':
+            lines = filter(lambda x: LOG_APP_LABEL in x, lines)
         l = len(lines)
         pag = get_pagination_info(page, l, lines_per_page)
         if page == 0: # show full log
@@ -27,8 +29,8 @@ def log_viewer(page):
             start, end = get_indexes(page, l, lines_per_page)
         else: # page is out of range
             return redirect(url_for('log_viewer', page=1))
-        log_content = reversed([re.sub(r' {2}', r'&nbsp;'*4, line) \
-                                    for line in lines[start:end]])
+        log_content = list(reversed([re.sub(r' {2}', r'&nbsp;'*4, line) \
+                                    for line in lines[start:end]]))
     
     return render_template('log-viewer.html',
                            pag = pag,
@@ -56,7 +58,7 @@ def get_pagination_info(page, lines_amount, lines_per_page):
                  disabled; if next is 0, "Next" link is disabled
     """
     pages = [i+1 for i, n in enumerate(range(0, lines_amount, lines_per_page))]
-    last = pages[-1]
+    last = pages[-1] if pages else 1
     prev = page-1
     if page < last:
         next = page + 1

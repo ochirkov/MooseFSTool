@@ -1,0 +1,18 @@
+{% if error %}
+	<div class="alert alert-error">
+		{{ error }}
+	</div>
+{% else %}
+	<h5>{{ path }}</h5>
+	{% if paths %}
+		<p>Choose the level to restore:</p><br/><br/>
+		<table>
+			{% for p in paths %}
+				<tr>
+					<td>{{ p }}</td>
+					<td><a href="#" onclick="send_post(event, '{{ post_url }}', '{{ p }}', 'restore', '')" class="btn btn-mini">Restore</a></td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endif %}
+{% endif %}

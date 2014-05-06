@@ -1,0 +1,38 @@
+{% extends 'main.html' %}
+{% block body %}
+	<div class="row">
+		<div class="span6">
+			<h3>{{ path }}</h3>
+			
+			{% if errors %}
+				<div class="alert alert-error">
+					{{ errors.mount|safe }}
+					{{ errors.connection|safe }}
+				</div>
+			{% endif %}
+			
+			{% if tree|length == 1 %}
+				<div class="alert alert-info">
+					Nothing to restore.
+				</div>
+			{% elif tree|length > 1 %}
+				{% include 'trash/trash_tree.html' %}
+			{% endif %}
+		</div>
+		
+		{% if tree|length > 1 %}
+			<div class="span6">
+				<div style="position:fixed">
+					<h3>Trash file info
+						<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading_big.gif') }}" class="hidden" width=30/>
+					</h3>
+					<div id="get_info_div">
+						<div class="alert alert-success">
+							Click on filename to restore file from trash.
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

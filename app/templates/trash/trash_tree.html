@@ -1,0 +1,14 @@
+<ul class="tree">
+	{% for item in tree %}
+	    <li>
+	    	{% if item.name != 'undel' %}
+	    		<a href="#" onclick="(event.preventDefault) ? event.preventDefault() : event.returnValue = false;" class="non-decorated">
+					<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
+	    		</a>
+	    		<a href="#" onclick="send_post(event, '{{ post_url }}', '{{ item.full_name }}', '', '')" class="non-decorated">
+	    			{{ item.name }}
+	    		</a>
+	    	{% endif %}
+	    </li>
+	{% endfor %}
+</ul>
