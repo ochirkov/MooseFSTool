@@ -12,8 +12,8 @@ import hashlib
 @app.route('/data', methods = ['GET', 'POST'])
 @login_required
 def data():
-    tree, path = None, None
-    errors = {}
+    tree, errors = {}, {}
+    path = ''
     host = config_helper.roots['master_host']
     try:
         con = transport.Connect(host)
@@ -21,7 +21,6 @@ def data():
         errors['connection'] = (useful_functions.nl2br(str(e)), )
     else:
         path = get_data_path(con)
-        tree= {}
         if not path:
             errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
         else:
@@ -67,7 +66,7 @@ def get_data_path(connection):
         logger.info('Getting data path from /etc/fstab.')
         f = connection.get_file('/etc/fstab', 'r')
         for line in f.readlines():
-            if 'fuse' in line and 'mfsmount' in line:
+            if line.startswith('mfsmount') and 'mfsmeta' not in line:
                 path = line.split()[1]
                 logger.info('Data path %s was got successfully.' % path)
     except IOError:

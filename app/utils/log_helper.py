@@ -4,8 +4,12 @@ from logging import FileHandler, Formatter
 from app.utils.config_helper import logging as LOG
 
 LOG_TYPE = LOG.get('type')
-LOG_PATH = LOG.get('path', '/var/log/moosetool.log') \
-                if LOG_TYPE == 'file' else '/var/log/syslog'
+
+if LOG_TYPE == 'file':
+    LOG_PATH = LOG.get('path', '/var/log/moosetool.log')
+elif LOG_TYPE == 'syslog':
+    LOG_PATH = '/var/log/syslog'
+
 LOG_APP_LABEL = 'moosefstool'
 
 def get_logger():
