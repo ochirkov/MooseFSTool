@@ -11,6 +11,7 @@ elif LOG_TYPE == 'syslog':
     LOG_PATH = '/var/log/syslog'
 
 LOG_APP_LABEL = 'moosefstool'
+LOG_MFS_LABEL = 'mfsmaster'
 
 def get_logger():
 
