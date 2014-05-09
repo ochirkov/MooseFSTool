@@ -1,10 +1,12 @@
-from app.utils.config_helper import remote_auth
+from app.utils.config_helper import ssh_options
 from app.utils import mfs_exceptions
 from app.utils.log_helper import logger
 
 import os
 import time
 import datetime
+
+SSH_USER = 'root'
 
 try:
     import paramiko
@@ -28,8 +30,8 @@ class Connect(object):
     >>> obj.remote_command('ls -l', 'stdout')  # Execute command on remote host and return code/stdout
     '''
 
-    def __init__(self, host, user=remote_auth.get('user'), password=remote_auth.get('passwd', None),
-                 private_key_file=remote_auth.get('key',None), port=22):
+    def __init__(self, host, user=SSH_USER, password=ssh_options.get('passwd', None),
+                 private_key_file=ssh_options.get('key',None), port=22):
 
         """
         Init Connect object. Init method understands both ip address and hostname of remote host.
@@ -41,7 +43,6 @@ class Connect(object):
         self.user = user
         self.password = password
         self.private_key_file = private_key_file
-        self.remote_auth_passwd = remote_auth['passwd']
         self.ssh = self.connect()
         self.remote = self._sftp_connect()
 
@@ -53,11 +54,7 @@ class Connect(object):
         >>> obj._connect(ssh_client)
         """
         try:
-            if self.remote_auth_passwd:
-                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file,
-                                       password=self.password)
-            else:
-                    ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
+            ssh_client.connect(self.host, username=self.user, key_filename=self.private_key_file)
 
         except Exception as e:
             msg = "\n".join(['ssh connection failed with the following error:\n%s' % str(e),
