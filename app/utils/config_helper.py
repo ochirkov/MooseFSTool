@@ -30,6 +30,5 @@ def cli_args_parser():
 
 general = config_parser('general')
 app_wtf = config_parser('app_wtf')
-roots = config_parser('roots')
 ssh_options = config_parser('ssh_options')
-logging = config_parser('logging')
+
