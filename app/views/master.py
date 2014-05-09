@@ -19,14 +19,15 @@ CONFIGS = {
        2 : "mfstopology.cfg"
     }
 
+DEFAULT_META_PATH = '/var/lib/mfs'
 
 @app.route('/master', methods = ['GET', 'POST'])
 @login_required
 def master():
     config_path, configs, meta_path, metafiles, master_info, backup_form = (None,)*6
     errors = {}
-    host = config_helper.roots['master_host']
-    port = config_helper.roots.get('master_port', 9421)
+    host = config_helper.moose_options['master_host']
+    port = config_helper.moose_options.get('master_port', 9421)
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
@@ -77,7 +78,7 @@ def get_config_info(connection, errors, files_list=CONFIGS.values()):
     config_path = ''
     configs = []
     try:
-        config_path = config_helper.roots['config_path']
+        config_path = config_helper.moose_options['config_path']
     except KeyError:
         msg = 'Cannot get \"config_path\" option from moosefs_tool.ini'
         logger.error(mfs_exceptions.ConfigsException(msg))
@@ -122,9 +123,12 @@ def get_meta_info(connection, errors, config_path):
     
     try:
         mfsmaster_cfg = connection.get_file(mfsmaster_cfg_path, 'r')
-        data_line = ''.join([l for l in mfsmaster_cfg.readlines() \
-                                                        if 'DATA_PATH' in l])
-        meta_path = re.split(' ?= ?', data_line)[1].strip()
+        line = "".join([l for l in mfsmaster_cfg.readlines() if 'DATA_PATH' in l])
+        try:
+            s = re.search(r'^( |[^#])?DATA_PATH ?= ?(?P<path>[\w|\/]+)', line)
+            meta_path = s.group('path')
+        except AttributeError:
+            meta_path = DEFAULT_META_PATH
 
         if connection.path_exists(meta_path):
             metafiles = connection.get_files_info(meta_path)
@@ -136,11 +140,6 @@ def get_meta_info(connection, errors, config_path):
 
     except mfs_exceptions.OpenRemoteFileFailed:
         msg = 'Cannot find \"%s\" in %s.' % (CONFIGS[0], config_path)
-        logger.error(mfs_exceptions.MetafilesException(msg))
-        errors['metafiles'].append(msg)
-    
-    except IndexError:
-        msg = 'Cannot read DATA_PATH option in %s.' % CONFIGS[0]
         logger.error(mfs_exceptions.MetafilesException(msg))
         errors['metafiles'].append(msg)
     

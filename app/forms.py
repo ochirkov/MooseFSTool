@@ -1,6 +1,5 @@
-from flask.ext.wtf import Form
-from wtforms import TextField, validators, PasswordField
-from app.utils.config_helper import roots
+from wtforms import Form, TextField, validators, PasswordField
+from app.utils.config_helper import moose_options
 
 class LoginForm(Form):
     
@@ -14,5 +13,5 @@ class LoginForm(Form):
 class BackupForm(Form):
     
     path = TextField(label='path to backup',
-                     default = roots.get('backup_path', ''),
-                      validators=[validators.Required()])
+                     default = moose_options.get('backup_path', ''),
+                     validators=[validators.Required()])

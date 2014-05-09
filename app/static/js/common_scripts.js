@@ -13,7 +13,6 @@ function edit_request(event, config_name) {
 	$.post("", {
 		config_name : config_name,
 		action : 'edit',
-		csrfmiddlewaretoken : getCookie('csrftoken'),
 	}, function(data) {
 		$('#id_content').html(data);
 	});
@@ -30,7 +29,6 @@ function confirm_save(event, config_name) {
 			content : content,
 			root_passwd : root_passwd,
 			action : 'save',
-			csrfmiddlewaretoken : getCookie('csrftoken'),
 		}, function(data) {
 			if (data == '') {
 				window.location.reload();
@@ -70,7 +68,6 @@ function open_folder(event, id, full_name) {
 		$("#loading_img_" + id).removeClass('hidden');
 		$.post("", {
 	        full_name : full_name,
-	        csrfmiddlewaretoken: getCookie('csrftoken'),
 	        },function(data) {
 	        	$('#' + id).html(data);
 	        	$("#" + id).collapse('show');
@@ -90,7 +87,6 @@ function send_post(event, post_url, full_name, action, is_dir) {
         full_name : full_name,
         action : action,
         is_dir : is_dir,
-        csrfmiddlewaretoken: getCookie('csrftoken'),
         },function(data) {
         	if (data == '') {
         		window.location.reload();

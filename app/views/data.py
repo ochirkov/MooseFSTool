@@ -12,16 +12,15 @@ import hashlib
 @app.route('/data', methods = ['GET', 'POST'])
 @login_required
 def data():
-    tree, path = None, None
-    errors = {}
-    host = config_helper.roots['master_host']
+    tree, errors = {}, {}
+    path = ''
+    host = config_helper.moose_options['master_host']
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
         errors['connection'] = (useful_functions.nl2br(str(e)), )
     else:
         path = get_data_path(con)
-        tree= {}
         if not path:
             errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
         else:
@@ -44,7 +43,7 @@ def data():
 
 @app.route('/data/info', methods = ['POST'])
 def get_file_info():
-    host = config_helper.roots['master_host']
+    host = config_helper.moose_options['master_host']
     con = transport.Connect(host)
     # possible action's types: mfsdirinfo, mfsfileinfo, mfscheckfile
     action = str(request.values['action'])
@@ -67,7 +66,7 @@ def get_data_path(connection):
         logger.info('Getting data path from /etc/fstab.')
         f = connection.get_file('/etc/fstab', 'r')
         for line in f.readlines():
-            if 'fuse' in line and 'mfsmount' in line:
+            if line.startswith('mfsmount') and 'mfsmeta' not in line:
                 path = line.split()[1]
                 logger.info('Data path %s was got successfully.' % path)
     except IOError:
@@ -81,7 +80,7 @@ def get_data_path(connection):
                             'Unresolved exception:\n%s' % e))
     if not path:
         logger.info('Getting data path from moosefs_tool.ini.')
-        path = config_helper.roots.get('data_path', '')
+        path = config_helper.moose_options.get('data_path', '')
         if path:
             logger.info('Data path %s was got successfully.' % path)
     return path

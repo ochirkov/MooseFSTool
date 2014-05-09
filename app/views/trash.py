@@ -1,6 +1,7 @@
 from flask import render_template, redirect, request, url_for
 from app import app
 from app.utils import transport, config_helper, mfs_exceptions, useful_functions
+from app.utils.log_helper import logger
 from app.decorators import login_required
 from app.views.data import make_remote_tree, isdir
 
@@ -9,10 +10,10 @@ import os
 @app.route('/trash', methods = ['GET', 'POST'])
 @login_required
 def trash():
-    tree = []
-    errors = {}
-    host = config_helper.roots['master_host']
-    port = config_helper.roots.get('master_port', 9421)
+    tree, errors = {}, {}
+    trash_path = ''
+    host = config_helper.moose_options['master_host']
+    port = config_helper.moose_options.get('master_port', 9421)
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
@@ -20,7 +21,8 @@ def trash():
     except Exception as e:
         pass
     else:
-        trash_path = os.path.join(config_helper.roots['trash_path'], 'trash')
+        trash_path = get_trash_path(con)
+        trash_path = os.path.join(trash_path, 'trash')
         if not isdir(con, trash_path):
             errors['mount'] = 'Path \"%s\" does not mounted.' % trash_path
         else:
@@ -44,6 +46,37 @@ def trash():
                            title = 'Trash')
 
 
+def get_trash_path(connection):
+    """
+    Tries to get trash path from /etc/fstab and than from 
+    moosefs_tool.ini. Returns empty if it fails.
+    """
+    path = ''
+    try:
+        logger.info('Getting trash path from /etc/fstab.')
+        f = connection.get_file('/etc/fstab', 'r')
+        for line in f.readlines():
+            if line.startswith('mfsmount') and 'mfsmeta' in line:
+                path = line.split()[1]
+                logger.info('Trash path %s was got successfully.' % path)
+    except IOError:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Cannot read /etc/fstab file.'))
+    except IndexError:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Cannot parse /etc/fstab.'))
+    except Exception as e:
+        logger.exception(mfs_exceptions.DataPathGettingFailed(
+                            'Unresolved exception:\n%s' % e))
+    if not path:
+        logger.info('Getting trash path from moosefs_tool.ini.')
+        path = config_helper.moose_options.get('trash_path', '')
+        if path:
+            logger.info('Trash path %s was got successfully.' % path)
+
+    return path
+
+
 @app.route('/trash/info', methods = ['POST'])
 def trash_info():
     msg, error = '', ''
@@ -52,9 +85,9 @@ def trash_info():
     paths = file_name.split('|')[1:]
     action = request.values['action']
     if action == 'restore':
-        host = config_helper.roots['master_host']
+        host = config_helper.moose_options['master_host']
         try:
-            trash_path = config_helper.roots['trash_path']
+            trash_path = config_helper.moose_options['trash_path']
             con = transport.Connect(host)
             command = 'mv {0}/trash/*{1}* {0}/trash/undel'.format(trash_path, file_name)
             ret_code = con.remote_command(command, 'code')

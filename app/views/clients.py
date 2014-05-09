@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for
 from app import app
 from app.decorators import login_required
-from app.utils.config_helper import roots
+from app.utils.config_helper import moose_options
 from app.utils.moose_lib import MooseFS
 
 
