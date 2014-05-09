@@ -30,8 +30,7 @@ class Connect(object):
     >>> obj.remote_command('ls -l', 'stdout')  # Execute command on remote host and return code/stdout
     '''
 
-    def __init__(self, host, user=SSH_USER, password=ssh_options.get('passwd', None),
-                 private_key_file=ssh_options.get('key',None), port=22):
+    def __init__(self, host, user=SSH_USER, private_key_file=ssh_options.get('key',None), port=22):
 
         """
         Init Connect object. Init method understands both ip address and hostname of remote host.
@@ -41,7 +40,6 @@ class Connect(object):
         self.host = host
         self.port = port
         self.user = user
-        self.password = password
         self.private_key_file = private_key_file
         self.ssh = self.connect()
         self.remote = self._sftp_connect()
