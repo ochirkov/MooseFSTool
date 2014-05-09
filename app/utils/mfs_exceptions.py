@@ -24,3 +24,9 @@ class MetafilesException(MooseError):
 
 class SectionMissing(ConfigsException):
     pass
+
+class ValueError(ConfigsException):
+    pass
+
+class IpAddressValidError(ConfigsException):
+    pass
