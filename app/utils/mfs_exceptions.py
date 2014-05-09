@@ -21,3 +21,6 @@ class ConfigsException(MooseError):
 
 class MetafilesException(MooseError):
     pass
+
+class SectionMissing(ConfigsException):
+    pass
