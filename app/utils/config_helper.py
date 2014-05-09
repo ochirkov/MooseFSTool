@@ -27,8 +27,7 @@ def cli_args_parser():
     parsed_args = parser.parse_args()
     return parsed_args.f
 
-
-general = config_parser('general')
-app_wtf = config_parser('app_wtf')
 ssh_options = config_parser('ssh_options')
+moose_options = config_parser('moose_options')
+general = config_parser('general')
 

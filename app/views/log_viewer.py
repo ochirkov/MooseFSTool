@@ -63,7 +63,7 @@ def get_mfs_log():
     """
     Returns filtered mfsmaster lines from syslog as list or error as string.
     """
-    host = config_helper.roots['master_host']
+    host = config_helper.moose_options['master_host']
     try:
         con = transport.Connect(host)
         log = con.get_file(LOG_PATH, 'r')

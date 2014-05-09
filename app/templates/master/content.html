@@ -49,7 +49,7 @@
 			<h3>Actions: </h3>
 			<a href="#" class="btn btn-small" data-toggle="collapse" data-target="#backup_div">Create backup <i class="icon-hdd"></i></a>
 			<div id="backup_div" class="collapse">
-				<form action="{{ url_for('master') }}" method="post">{{ backup_form.csrf_token }}
+				<form action="{{ url_for('master') }}" method="post">
 					{% for field in backup_form %}
 						{% if field.errors %}
 						<script>

@@ -26,8 +26,8 @@ DEFAULT_META_PATH = '/var/lib/mfs'
 def master():
     config_path, configs, meta_path, metafiles, master_info, backup_form = (None,)*6
     errors = {}
-    host = config_helper.roots['master_host']
-    port = config_helper.roots.get('master_port', 9421)
+    host = config_helper.moose_options['master_host']
+    port = config_helper.moose_options.get('master_port', 9421)
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
@@ -78,7 +78,7 @@ def get_config_info(connection, errors, files_list=CONFIGS.values()):
     config_path = ''
     configs = []
     try:
-        config_path = config_helper.roots['config_path']
+        config_path = config_helper.moose_options['config_path']
     except KeyError:
         msg = 'Cannot get \"config_path\" option from moosefs_tool.ini'
         logger.error(mfs_exceptions.ConfigsException(msg))

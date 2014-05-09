@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-{{ form.hidden_tag() }}
-	<form action="{{ url_for('login') }}" method="post">{{ form.csrf_token }}
+	<form action="{{ url_for('login') }}" method="post">
 		<h2>Sign up for MooseFS admin </h2>
 		<!-- {{ form.errors }} -->
 		{% for field in form if field.widget.input_type != 'hidden' %}
