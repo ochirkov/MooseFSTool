@@ -15,7 +15,7 @@ config = ConfigParser()
 DEFAULT_BACKUP_PATH = '/var/mfs/backups'
 DEFAULT_APP_PORT = 5001
 LOCAL_HOST_ADDR = '127.0.0.1'
-
+DEFAULT_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
 
 def cli_args_parser():
     parser = argparse.ArgumentParser(description='Parsing CLI args')
