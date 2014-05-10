@@ -12,7 +12,6 @@ except ImportError:
 
 config = ConfigParser()
 
-DEFAULT_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
 DEFAULT_BACKUP_PATH = '/var/mfs/backups'
 DEFAULT_APP_PORT = 5001
 LOCAL_HOST_ADDR = '127.0.0.1'
@@ -27,10 +26,9 @@ def cli_args_parser():
     return parsed_args.f
 
 
-path = cli_args_parser()
-
-
 def config_parser(section):
+
+    path = cli_args_parser()
 
     if path is None:
         config.read(DEFAULT_CONFIG_PATH)
@@ -62,6 +60,7 @@ def directives_check(config_obj):
 
     # IP address validation
     ip_for_valid = {'general': 'host', 'moose_options': 'master_host'}
+
     try:
         for i in ip_for_valid:
             socket.inet_aton(config_obj.get(i, ip_for_valid[i]))
@@ -71,15 +70,17 @@ def directives_check(config_obj):
         raise mfs_exceptions.IpAddressValidError(msg)
 
     # Check whether ssh key exists
-    try:
-        if path is None:
-            os.path.isfile(DEFAULT_CONFIG_PATH)
-        else:
-            os.path.isfile(path)
-    except Exception:
-        msg = 'Config file is absent'
+    if config_obj.get('moose_options', 'key') is None:
+        msg = 'SSH key file is absent'
         logger(msg)
-        raise mfs_exceptions.ConfigMissing(msg)
+        raise mfs_exceptions.KeyFileMissing(msg)
+    else:
+        try:
+            os.path.isfile(config_obj.get('moose_options', 'key'))
+        except Exception:
+            msg = 'Config file is absent'
+            logger(msg)
+            raise mfs_exceptions.InvalidKeyFile(msg)
 
     # Check whether backup path exists
     if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):

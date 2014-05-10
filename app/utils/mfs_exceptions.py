@@ -42,3 +42,9 @@ class PortUsageError(ConfigsException):
 
 class HostResolveError(ConfigsException):
     pass
+
+class KeyFileMissing(ConfigsException):
+    pass
+
+class InvalidKeyFile(ConfigsException):
+    pass
