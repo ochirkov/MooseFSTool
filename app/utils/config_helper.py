@@ -35,6 +35,12 @@ def config_parser(section):
         config.read(DEFAULT_CONFIG_PATH)
     else:
         config.read(path)
+
+    sections_check(config)
+    directives_check(config)
+    network_check(config)
+    resolv_check(config)
+
     return dict((x, y) for x, y in config.items(section))
 
 
