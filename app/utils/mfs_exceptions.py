@@ -24,3 +24,27 @@ class MetafilesException(MooseError):
 
 class SectionMissing(ConfigsException):
     pass
+
+class ValueError(ConfigsException):
+    pass
+
+class AddressValidError(ConfigsException):
+    pass
+
+class ConfigMissing(ConfigsException):
+    pass
+
+class BackupPathError(ConfigsException):
+    pass
+
+class PortUsageError(ConfigsException):
+    pass
+
+class HostResolveError(ConfigsException):
+    pass
+
+class KeyFileMissing(ConfigsException):
+    pass
+
+class InvalidKeyFile(ConfigsException):
+    pass
