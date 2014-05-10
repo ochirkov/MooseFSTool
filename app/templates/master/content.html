@@ -1,42 +1,48 @@
 <div class="row-fluid">
 	<div class="span4">
 	<h3>{{ title }} info </h3>
-	{% if errors.connection %}
+	{% if errors %}
 		<div class="alert alert-error">
-			{% for e in errors.connection %}
+			{% for e in errors %}
 				{{ e|safe }}<br/>
 			{% endfor %}
 		</div>
 	{% else %}
-		{% if errors.master_info %}
+		{% if mfsmaster_info.errors %}
 			<div class="alert alert-error">
-				{% for e in errors.master_info %}
+				{% for e in mfsmaster_info.errors %}
 					{{ e|safe }}<br/>
 				{% endfor %}
 			</div>
 		{% else %}
 			<table class="table">
-				{% for k, v in master_info.iteritems() if k != 'Error' %}
-					<tr>
-						<td><strong>{{ k }}</strong></td>
-						<td>{{ v }}</td>
-					</tr>
-				{% endfor %}
+				<tr>
+					<td><strong>Host</strong></td>
+					<td>{{ mfsmaster_info.host }}</td>
+				</tr>
+				<tr>
+					<td><strong>Port</strong></td>
+					<td>{{ mfsmaster_info.port }}</td>
+				</tr>
+				<tr>
+					<td><strong>Version</strong></td>
+					<td>{{ mfsmaster_info.version|safe }}</td>
+				</tr>
 			</table>
 		{% endif %}
 		</div>
 		<div class="span4">
-			<h3>Config files ({{ config_path }}): </h3>
-			{% if errors.configs %}
+			<h3>Config files ({{ configs_info.configs_path }}): </h3>
+			{% if configs_info.errors %}
 				<div class="alert alert-error">
-					{% for e in errors.configs %}
+					{% for e in configs_info.errors %}
 						{{ e|safe }}<br/>
 					{% endfor %}
 				</div>
 			{% endif %}
-			{% if configs %}
+			{% if configs_info.configs %}
 				<table class="table" style="width:250px;">
-					{% for file in configs %}
+					{% for file in configs_info.configs %}
 						<tr>
 							<td><strong>{{ file }}</strong></td>
 							<td><a href="#" onclick="edit_request(event, '{{ file }}')" class="btn btn-mini"><i class="icon-edit"></i> Edit</a></td>
@@ -87,10 +93,10 @@
 		</div>
 	</div>
 	<div class="row-fluid">
-		<h3>Metafiles ({{ meta_path }}): </h3>
-		{% if errors.metafiles %}
+		<h3>Metafiles ({{ mfsmaster_info.meta_path }}): </h3>
+		{% if meta_info.errors %}
 			<div class="alert alert-error">
-				{% for e in errors.metafiles %}
+				{% for e in meta_info.errors %}
 					{{ e|safe }}<br/>
 				{% endfor %}
 			</div>
@@ -106,7 +112,7 @@
 			    		<!-- <th>Change</th> -->
 			    	</tr>
 		    	</thead>
-				{% for file in metafiles %}
+				{% for file in meta_info.metafiles %}
 					<tr>
 						<td><strong>{{ file.name }}</strong></td>
 						<td>{{ file.mode }}</td>

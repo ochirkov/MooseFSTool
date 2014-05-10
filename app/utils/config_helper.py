@@ -1,3 +1,12 @@
+"""
+authors      :  Oleksandr Chirkov, Anastasiia Panchenko
+creation date:  05/04/2014
+
+This module provides with values, parsed from
+MFS TOOL config and default values which are used
+if are not set in config
+"""
+
 import re
 import argparse
 import socket
@@ -10,12 +19,16 @@ try:
 except ImportError:
     from configparser import ConfigParser
 
-config = ConfigParser()
-
-DEFAULT_BACKUP_PATH = '/var/mfs/backups'
 DEFAULT_APP_PORT = 5001
 DEFAULT_APP_ADDRESS = '0.0.0.0'
-DEFAULT_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
+DEFAULT_MFSTOOL_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
+DEFAULT_BACKUP_PATH = '/var/mfs/backups'
+DEFAULT_META_PATH = '/var/lib/mfs'
+DEFAULT_CONFIGS_PATH = '/etc/mfs'
+DEFAULT_MFSMASTER_PORT = 9421
+
+config = ConfigParser()
+
 
 def cli_args_parser():
     parser = argparse.ArgumentParser(description='Parsing CLI args')
@@ -31,7 +44,7 @@ def config_parser(section):
     path = cli_args_parser()
 
     if path is None:
-        config.read(DEFAULT_CONFIG_PATH)
+        config.read(DEFAULT_MFSTOOL_CONFIG_PATH)
     else:
         config.read(path)
 
