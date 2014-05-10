@@ -59,21 +59,18 @@ def directives_check(config_obj):
             raise mfs_exceptions.ValueError(msg)
 
     # Check whether ssh key exists
-    if config_obj.get('ssh_options', 'key') is None:
-        msg = 'SSH key file is absent'
+    if not config_obj.get('ssh_options', 'key'):
+        msg = 'SSH key file is not specified.'
         logger.error(msg)
         raise mfs_exceptions.KeyFileMissing(msg)
-    else:
-        try:
-            os.path.isfile(config_obj.get('ssh_options', 'key'))
-        except Exception:
-            msg = 'Config file is absent'
-            logger.error(msg)
-            raise mfs_exceptions.InvalidKeyFile(msg)
+    elif not os.path.isfile(config_obj.get('ssh_options', 'key')):
+        msg = 'Specified SSH key file is absent'
+        logger.error(msg)
+        raise mfs_exceptions.InvalidKeyFile(msg)
 
     # Check whether backup path exists
     try:
-        if config_obj.get('moose_options', 'backup_path') is None:
+        if not config_obj.get('moose_options', 'backup_path'):
             if not os.path.isdir(DEFAULT_BACKUP_PATH):
                 os.makedirs(DEFAULT_BACKUP_PATH)
                 msg = 'Backup folder %s is not exists. Creating default backup folder...'
