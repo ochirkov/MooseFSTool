@@ -30,3 +30,12 @@ class ValueError(ConfigsException):
 
 class IpAddressValidError(ConfigsException):
     pass
+
+class ConfigMissing(ConfigsException):
+    pass
+
+class BackupPathError(ConfigsException):
+    pass
+
+class PortUsageError(ConfigsException):
+    pass

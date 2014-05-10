@@ -1,5 +1,6 @@
 import argparse
 import socket
+import os.path
 from app.utils import mfs_exceptions
 
 try:
@@ -9,8 +10,11 @@ except ImportError:
 
 config = ConfigParser()
 
+DEFAULT_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
 DEFAULT_BACKUP_PATH = '/var/mfs/backups'
 DEFAULT_APP_PORT = 5001
+LOCAL_HOST_ADDR = '127.0.0.1'
+
 
 def cli_args_parser():
     parser = argparse.ArgumentParser(description='Parsing CLI args')
@@ -21,12 +25,13 @@ def cli_args_parser():
     return parsed_args.f
 
 
+path = cli_args_parser()
+
+
 def config_parser(section):
-    data = None
-    path = cli_args_parser()
 
     if path is None:
-        config.read('/etc/moosefs_tool/moosefs_tool.ini')
+        config.read(DEFAULT_CONFIG_PATH)
     else:
         config.read(path)
     return dict((x, y) for x, y in config.items(section))
@@ -56,6 +61,44 @@ def directives_check(config_obj):
         msg = '%s ip address is not valid in %s section.' % (ip_for_valid[i], i)
         raise mfs_exceptions.IpAddressValidError(msg)
 
+    # Check whether ssh key exists
+    try:
+        if path is None:
+            os.path.isfile(DEFAULT_CONFIG_PATH)
+        else:
+            os.path.isfile(path)
+    except Exception:
+        msg = 'Config file is absent'
+        raise mfs_exceptions.ConfigMissing(msg)
+
+    # Check whether backup path exists
+    if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
+        msg = 'Backup folder %s is not exists' % config_obj.get('moose_options', 'backup_path')
+        raise mfs_exceptions.BackupPathError(msg)
+
+
+def network_check(config_obj):
+
+    # Check whether app port is accessible
+    port = config_obj.get('general', 'port')
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    if port is None:
+        port = DEFAULT_APP_PORT
+        result = s.connect_ex((LOCAL_HOST_ADDR, port))
+    else:
+        result = s.connect_ex((LOCAL_HOST_ADDR, port))
+
+    if result != 0:
+        s.close()
+        msg = '%s port is already used' % str(port)
+        raise mfs_exceptions.PortUsageError(msg)
+
+
+#def resolv_check(config_obj):
+
+    # Check whether master address is valid
 
 
 ssh_options = config_parser('ssh_options')
