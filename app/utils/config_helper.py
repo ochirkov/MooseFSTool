@@ -1,6 +1,7 @@
+import re
 import argparse
 import socket
-import os.path
+import os.path, os.system
 from app.utils import mfs_exceptions
 
 try:
@@ -96,9 +97,26 @@ def network_check(config_obj):
         raise mfs_exceptions.PortUsageError(msg)
 
 
-#def resolv_check(config_obj):
+def resolv_check(config_obj):
+
+    master_host = config_obj.get('moose_options', 'master_host')
+
+    # Check whether master host resolves
+    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+
+    if (allowed.match(x) for x in master_host.split(".")):
+        try:
+            socket.gethostbyname('master_host')
+        except Exception:
+            msg = "%s doesn't resolve" % str(master_host)
+            raise mfs_exceptions.HostResolveError(msg)
 
     # Check whether master address is valid
+    responce = os.system("ping -c 1 " + master_host)
+
+    if responce != 0:
+        msg = '%s host is innaccessible' % str(master_host)
+        raise mfs_exceptions.MooseConnectionFailed(msg)
 
 
 ssh_options = config_parser('ssh_options')

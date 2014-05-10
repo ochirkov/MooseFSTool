@@ -39,3 +39,6 @@ class BackupPathError(ConfigsException):
 
 class PortUsageError(ConfigsException):
     pass
+
+class HostResolveError(ConfigsException):
+    pass
