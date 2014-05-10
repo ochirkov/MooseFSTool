@@ -16,26 +16,44 @@ def trash():
     port = config_helper.moose_options.get('master_port', 9421)
     try:
         con = transport.Connect(host)
-    except mfs_exceptions.MooseConnectionFailed as e:
-        errors['connection'] = useful_functions.nl2br(str(e))
-    except Exception as e:
-        pass
-    else:
-        trash_path = get_trash_path(con)
-        if not con.path_exists(trash_path):
-            con.remote_command("mkdir -p %s" % trash_path, 'stdout')
-        errors['mount'] = ''
-        command = '/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path
-        resp = con.remote_command(command, 'code')
-        if resp:
-            errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Command returned exit code %s' % (command, resp)
-        trash_path = os.path.join(trash_path, 'trash')
-        if not errors['mount']:
-            tree = make_remote_tree(con, trash_path)
+
         if request.method == 'POST':
             return render_template('trash/trash_tree.html',
                                    post_url = '/trash/info',
                                    tree = make_remote_tree(con, request.values['full_name']))
+        
+        trash_path = get_trash_path(con)
+        # Trash path is undefined
+        if not trash_path:
+            raise mfs_exceptions.MFSMountException(
+                    "Couldn't get trash path from /etc/fstab and %s." % \
+                    config_helper.DEFAULT_MFSTOOL_CONFIG_PATH)
+            
+        # Checking if mount point exists; create it otherwise
+        if not con.path_exists(trash_path):
+            con.remote_command("mkdir -p %s" % trash_path, 'stdout')
+
+        # Cheking if data_path already mounted
+        # 0 - is mounted, 1 - is NOT mounted
+        mount_code = con.remote_command('/bin/mountpoint %s' % trash_path, 'code')
+        if mount_code:
+            stdout, stderr = con.remote_command('/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path, 'std')
+            # Here are weird errors which I don't understand, but path is mounted successfully
+            if stderr:
+                raise mfs_exceptions.MFSMountException(
+                            "Couldn't mount trash path %s.\n" % trash_path + \
+                            "Got the following error: %s" % stderr)
+
+    except mfs_exceptions.MooseConnectionFailed as e:
+        errors['connection'] = useful_functions.nl2br(str(e))
+    
+    except mfs_exceptions.MFSMountException as e:
+        errors['mount'] = (useful_functions.nl2br(str(e)), )
+    
+    else:
+        trash_path = os.path.join(trash_path, 'trash')
+        tree = make_remote_tree(con, trash_path)
+
     
     return render_template('trash/trash.html',
                            post_url = '/trash/info',
@@ -47,7 +65,7 @@ def trash():
 
 def get_trash_path(connection):
     """
-    Tries to get trash path from /etc/fstab and than from 
+    Tries to get trash path from /etc/fstab and then from 
     moosefs_tool.ini. Returns empty if it fails.
     """
     path = ''
@@ -86,8 +104,8 @@ def trash_info():
     if action == 'restore':
         host = config_helper.moose_options['master_host']
         try:
-            trash_path = config_helper.moose_options['trash_path']
             con = transport.Connect(host)
+            trash_path = get_trash_path(con)
             command = 'mv {0}/trash/*{1}* {0}/trash/undel'.format(trash_path, file_name)
             ret_code = con.remote_command(command, 'code')
         except Exception as e:

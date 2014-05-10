@@ -15,41 +15,49 @@ def data():
     tree, errors = {}, {}
     data_path = ''
     host = config_helper.moose_options['master_host']
-    
+
     try:
         con = transport.Connect(host)
+        
+        if request.method == 'POST':
+            return render_template('data/files_tree.html',
+                                   post_url = "/data/info",
+                                   tree = make_remote_tree(con, request.values['full_name']))
+
         data_path = get_data_path(con)
+        # Data path is undefined
         if not data_path:
             raise mfs_exceptions.MFSMountException(
                     "Couldn't get data path from /etc/fstab and %s." % \
                     config_helper.DEFAULT_MFSTOOL_CONFIG_PATH)
         
+        # Cheking if mount point exists and create it otherwise
         if not con.path_exists(data_path):
             stdout, stderr = con.remote_command("mkdir -p %s" % data_path, 'std')
             if stderr:
                 raise mfs_exceptions.MFSMountException(
-                            "Couldn't create mount point %s." % data_path + \
-                            " Got the following error: %s" % stderr)
-
-        stdout, stderr = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'std')
-#         if stderr:
-#             raise mfs_exceptions.MFSMountException(
-#                         "Couldn't mount data path %s." % data_path + \
-#                         " Got the following error: %s" % stderr)
+                            "Couldn't create mount point %s.\n" % data_path + \
+                            "Got the following error: %s" % stderr)
+                
+        # Cheking if data_path already mounted
+        # 0 - is mounted, 1 - is NOT mounted
+        mount_code = con.remote_command('/bin/mountpoint %s' % data_path, 'code')
+        if mount_code:
+            stdout, stderr = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'std')
+            # Here are weird errors which I don't understand, but path is mounted successfully
+            if stderr:
+                raise mfs_exceptions.MFSMountException(
+                            "Couldn't mount data path %s.\n" % data_path + \
+                            "Got the following error: %s" % stderr)
 
     except mfs_exceptions.MooseConnectionFailed as e:
         errors['connection'] = (useful_functions.nl2br(str(e)), )
     
     except mfs_exceptions.MFSMountException as e:
-        errors['mount'] = (str(e), )
+        errors['mount'] = (useful_functions.nl2br(str(e)), )
     
     else:
         tree = make_remote_tree(con, data_path)
-    
-    if request.method == 'POST':
-        return render_template('data/files_tree.html',
-                               post_url = "/data/info",
-                               tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('data/data.html',
                            post_url = "/data/info",
@@ -76,7 +84,7 @@ def get_file_info():
 
 def get_data_path(connection):
     """
-    Tries to get data path from /etc/fstab and than from 
+    Tries to get data path from /etc/fstab and then from 
     moosefs_tool.ini. Returns empty if it fails.
     """
     path = ''
