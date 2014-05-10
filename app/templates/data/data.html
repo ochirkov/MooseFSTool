@@ -4,6 +4,7 @@
 		{% if errors %}
 			<div class="alert alert-error">
 				{% for k in errors %}
+					{{ k }} error:<br/>
 					{% for e in errors[k] %}
 						{{ e|safe }}<br/>
 					{% endfor %}

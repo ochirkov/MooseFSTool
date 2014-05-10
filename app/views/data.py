@@ -13,30 +13,48 @@ import hashlib
 @login_required
 def data():
     tree, errors = {}, {}
-    path = ''
+    data_path = ''
     host = config_helper.moose_options['master_host']
+    
     try:
         con = transport.Connect(host)
+        data_path = get_data_path(con)
+        if not data_path:
+            raise mfs_exceptions.MFSMountException(
+                    "Couldn't get data path from /etc/fstab and %s." % \
+                    config_helper.DEFAULT_MFSTOOL_CONFIG_PATH)
+        
+        if not con.path_exists(data_path):
+            stdout, stderr = con.remote_command("mkdir -p %s" % data_path, 'std')
+            if stderr:
+                raise mfs_exceptions.MFSMountException(
+                            "Couldn't create mount point %s." % data_path + \
+                            " Got the following error: %s" % stderr)
+
+        stdout, stderr = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'std')
+#         if stderr:
+#             raise mfs_exceptions.MFSMountException(
+#                         "Couldn't mount data path %s." % data_path + \
+#                         " Got the following error: %s" % stderr)
+
     except mfs_exceptions.MooseConnectionFailed as e:
         errors['connection'] = (useful_functions.nl2br(str(e)), )
+    
+    except mfs_exceptions.MFSMountException as e:
+        errors['mount'] = (str(e), )
+    
     else:
-        path = get_data_path(con)
-        if not path:
-            errors['data_path'] = 'Cannot get data path from /etc/fstab and moosefs_tool.ini.'
-        else:
-            command = 'mfsmount %s' % path
-            resp = con.remote_command(command, 'stdout')
-            tree = make_remote_tree(con, path)
-            
-            if request.method == 'POST':
-                return render_template('data/files_tree.html',
-                                       post_url = "/data/info",
-                                       tree = make_remote_tree(con, request.values['full_name']))
+        tree = make_remote_tree(con, data_path)
+    
+    if request.method == 'POST':
+        return render_template('data/files_tree.html',
+                               post_url = "/data/info",
+                               tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('data/data.html',
                            post_url = "/data/info",
                            tree = tree,
-                           path = path,
+                           path = data_path,
                            errors = errors,
                            title = 'Data')
 
@@ -47,7 +65,7 @@ def get_file_info():
     con = transport.Connect(host)
     # possible action's types: mfsdirinfo, mfsfileinfo, mfscheckfile
     action = str(request.values['action'])
-    data = con.remote_command('%s %s' % (action, request.values['full_name']), 'stdout')
+    data, err = con.remote_command('%s %s' % (action, request.values['full_name']), 'std')
     return render_template('data/getinfo.html',
                            post_url = "/data/info",
                            full_name = request.values['full_name'],
@@ -79,7 +97,8 @@ def get_data_path(connection):
         logger.exception(mfs_exceptions.DataPathGettingFailed(
                             'Unresolved exception:\n%s' % e))
     if not path:
-        logger.info('Getting data path from moosefs_tool.ini.')
+        logger.info('Getting data path from %s.' % \
+                    config_helper.DEFAULT_MFSTOOL_CONFIG_PATH)
         path = config_helper.moose_options.get('data_path', '')
         if path:
             logger.info('Data path %s was got successfully.' % path)

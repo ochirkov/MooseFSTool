@@ -127,8 +127,8 @@ class Connect(object):
 
         if return_value == 'code':
             return stdout.channel.recv_exit_status()
-        elif return_value == 'stdout':
-            return stdout.readlines()
+        elif return_value == 'std':
+            return stdout, stderr
     
     def path_exists(self, path):
         """ 

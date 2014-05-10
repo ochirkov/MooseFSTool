@@ -22,21 +22,20 @@ def trash():
         pass
     else:
         trash_path = get_trash_path(con)
+        if not con.path_exists(trash_path):
+            con.remote_command("mkdir -p %s" % trash_path, 'stdout')
+        errors['mount'] = ''
+        command = '/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path
+        resp = con.remote_command(command, 'code')
+        if resp:
+            errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Command returned exit code %s' % (command, resp)
         trash_path = os.path.join(trash_path, 'trash')
-        if not isdir(con, trash_path):
-            errors['mount'] = 'Path \"%s\" does not mounted.' % trash_path
-        else:
+        if not errors['mount']:
             tree = make_remote_tree(con, trash_path)
-            
-            command = '/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path
-            resp = con.remote_command(command, 'stdout')
-            if resp:
-                errors['mount'] = 'Failed to mount trash folder with command \"%s\".<br/>Got following error:<br/> %s.' % (command, resp)
-            
-            if request.method == 'POST':
-                return render_template('trash/trash_tree.html',
-                                       post_url = '/trash/info',
-                                       tree = make_remote_tree(con, request.values['full_name']))
+        if request.method == 'POST':
+            return render_template('trash/trash_tree.html',
+                                   post_url = '/trash/info',
+                                   tree = make_remote_tree(con, request.values['full_name']))
     
     return render_template('trash/trash.html',
                            post_url = '/trash/info',
