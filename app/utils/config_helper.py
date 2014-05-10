@@ -82,21 +82,21 @@ def directives_check(config_obj):
         raise mfs_exceptions.InvalidKeyFile(msg)
 
     # Check whether backup path exists
-    try:
-        if not config_obj.get('moose_options', 'backup_path'):
-            if not os.path.isdir(DEFAULT_BACKUP_PATH):
-                os.makedirs(DEFAULT_BACKUP_PATH)
-                msg = 'Backup folder %s is not exists. Creating default backup folder...'
-                logger.error(msg)
-        else:
-            if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
-                msg = 'Backup folder %s is not exists. Creating backup folder...' % config_obj.get('moose_options','backup_path')
-                os.makedirs(config_obj.get('moose_options', 'backup_path'))
-                logger.error(msg)
-    except Exception:
-        msg = 'Error during backup folder creation'
-        logger.error(msg)
-        raise mfs_exceptions.BackupPathError(msg)
+#     try:
+#         if not config_obj.get('moose_options', 'backup_path'):
+#             if not os.path.isdir(DEFAULT_BACKUP_PATH):
+#                 os.makedirs(DEFAULT_BACKUP_PATH)
+#                 msg = 'Backup folder %s is not exists. Creating default backup folder...'
+#                 logger.error(msg)
+#         else:
+#             if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
+#                 msg = 'Backup folder %s is not exists. Creating backup folder...' % config_obj.get('moose_options','backup_path')
+#                 os.makedirs(config_obj.get('moose_options', 'backup_path'))
+#                 logger.error(msg)
+#     except Exception:
+#         msg = 'Error during backup folder creation'
+#         logger.error(msg)
+#         raise mfs_exceptions.BackupPathError(msg)
 
 
 def network_check(config_obj):
