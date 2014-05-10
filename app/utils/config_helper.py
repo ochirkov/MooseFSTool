@@ -3,6 +3,7 @@ import argparse
 import socket
 import os.path, os.system
 from app.utils import mfs_exceptions
+from app.utils.log_helper import logger
 
 try:
     from ConfigParser import ConfigParser
@@ -46,6 +47,7 @@ def sections_check(config_obj):
     for i in ('general', 'moose_options', 'ssh_options'):
         if not config_obj.has_section(i):
             msg = '%s section is missing. This section is required' % str(i)
+            logger(msg)
             raise mfs_exceptions.SectionMissing(msg)
 
 def directives_check(config_obj):
@@ -55,6 +57,7 @@ def directives_check(config_obj):
     for i in options:
         if not config_obj.has_option(i, options.get(i)):
             msg = '%s value is required for %s directive.' % (options.get(i), i)
+            logger(msg)
             raise mfs_exceptions.ValueError(msg)
 
     # IP address validation
@@ -64,6 +67,7 @@ def directives_check(config_obj):
             socket.inet_aton(config_obj.get(i, ip_for_valid[i]))
     except Exception:
         msg = '%s ip address is not valid in %s section.' % (ip_for_valid[i], i)
+        logger(msg)
         raise mfs_exceptions.IpAddressValidError(msg)
 
     # Check whether ssh key exists
@@ -74,11 +78,13 @@ def directives_check(config_obj):
             os.path.isfile(path)
     except Exception:
         msg = 'Config file is absent'
+        logger(msg)
         raise mfs_exceptions.ConfigMissing(msg)
 
     # Check whether backup path exists
     if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
         msg = 'Backup folder %s is not exists' % config_obj.get('moose_options', 'backup_path')
+        logger(msg)
         raise mfs_exceptions.BackupPathError(msg)
 
 
@@ -98,6 +104,7 @@ def network_check(config_obj):
     if result != 0:
         s.close()
         msg = '%s port is already used' % str(port)
+        logger(msg)
         raise mfs_exceptions.PortUsageError(msg)
 
 
@@ -113,6 +120,7 @@ def resolv_check(config_obj):
             socket.gethostbyname('master_host')
         except Exception:
             msg = "%s doesn't resolve" % str(master_host)
+            logger(msg)
             raise mfs_exceptions.HostResolveError(msg)
 
     # Check whether master address is valid
@@ -120,6 +128,7 @@ def resolv_check(config_obj):
 
     if responce != 0:
         msg = '%s host is innaccessible' % str(master_host)
+        logger(msg)
         raise mfs_exceptions.MooseConnectionFailed(msg)
 
 
