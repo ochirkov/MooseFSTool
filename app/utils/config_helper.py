@@ -140,12 +140,15 @@ def resolv_check(config_obj):
 
     # Check whether master address is valid
     master_host = config_obj.get('moose_options', 'master_host')
-    responce = os.system("ping -c 1 " + master_host)
-
-    if responce != 0:
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((master_host, 22))
+    except Exception:
         msg = '%s host is innaccessible' % str(master_host)
         logger(msg)
         raise mfs_exceptions.MooseConnectionFailed(msg)
+    finally:
+        s.close()
 
 
 ssh_options = config_parser('ssh_options')
