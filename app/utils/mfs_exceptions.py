@@ -28,7 +28,7 @@ class SectionMissing(ConfigsException):
 class ValueError(ConfigsException):
     pass
 
-class IpAddressValidError(ConfigsException):
+class AddressValidError(ConfigsException):
     pass
 
 class ConfigMissing(ConfigsException):

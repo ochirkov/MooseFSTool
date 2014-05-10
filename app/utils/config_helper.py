@@ -1,7 +1,7 @@
 import re
 import argparse
 import socket
-import os.path, os.system
+import os
 from app.utils import mfs_exceptions
 from app.utils.log_helper import logger
 
@@ -14,7 +14,7 @@ config = ConfigParser()
 
 DEFAULT_BACKUP_PATH = '/var/mfs/backups'
 DEFAULT_APP_PORT = 5001
-LOCAL_HOST_ADDR = '127.0.0.1'
+DEFAULT_APP_ADDRESS = '0.0.0.0'
 DEFAULT_CONFIG_PATH = '/etc/moosefs_tool/moosefs_tool.ini'
 
 def cli_args_parser():
@@ -45,7 +45,7 @@ def sections_check(config_obj):
     for i in ('general', 'moose_options', 'ssh_options'):
         if not config_obj.has_section(i):
             msg = '%s section is missing. This section is required' % str(i)
-            logger(msg)
+            logger.error(msg)
             raise mfs_exceptions.SectionMissing(msg)
 
 def directives_check(config_obj):
@@ -55,48 +55,37 @@ def directives_check(config_obj):
     for i in options:
         if not config_obj.has_option(i, options.get(i)):
             msg = '%s value is required for %s directive.' % (options.get(i), i)
-            logger(msg)
+            logger.error(msg)
             raise mfs_exceptions.ValueError(msg)
 
-    # IP address validation
-    ip_for_valid = {'general': 'host', 'moose_options': 'master_host'}
-
-    try:
-        for i in ip_for_valid:
-            socket.inet_aton(config_obj.get(i, ip_for_valid[i]))
-    except Exception:
-        msg = '%s ip address is not valid in %s section.' % (ip_for_valid[i], i)
-        logger(msg)
-        raise mfs_exceptions.IpAddressValidError(msg)
-
     # Check whether ssh key exists
-    if config_obj.get('moose_options', 'key') is None:
+    if config_obj.get('ssh_options', 'key') is None:
         msg = 'SSH key file is absent'
-        logger(msg)
+        logger.error(msg)
         raise mfs_exceptions.KeyFileMissing(msg)
     else:
         try:
-            os.path.isfile(config_obj.get('moose_options', 'key'))
+            os.path.isfile(config_obj.get('ssh_options', 'key'))
         except Exception:
             msg = 'Config file is absent'
-            logger(msg)
+            logger.error(msg)
             raise mfs_exceptions.InvalidKeyFile(msg)
 
     # Check whether backup path exists
     try:
         if config_obj.get('moose_options', 'backup_path') is None:
             if not os.path.isdir(DEFAULT_BACKUP_PATH):
-                os.mkdirs(DEFAULT_BACKUP_PATH)
+                os.makedirs(DEFAULT_BACKUP_PATH)
                 msg = 'Backup folder %s is not exists. Creating default backup folder...'
-                logger(msg)
+                logger.error(msg)
         else:
             if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
                 msg = 'Backup folder %s is not exists. Creating backup folder...' % config_obj.get('moose_options','backup_path')
-                os.mkdirs(config_obj.get('moose_options', 'backup_path'))
-                logger(msg)
+                os.makedirs(config_obj.get('moose_options', 'backup_path'))
+                logger.error(msg)
     except Exception:
         msg = 'Error during backup folder creation'
-        logger(msg)
+        logger.error(msg)
         raise mfs_exceptions.BackupPathError(msg)
 
 
@@ -104,38 +93,53 @@ def network_check(config_obj):
 
     # Check whether app port is accessible
     port = config_obj.get('general', 'port')
+    address = config_obj.get('general', 'host')
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    if port is None:
+    if port is None and address is None:
         port = DEFAULT_APP_PORT
-        result = s.connect_ex((LOCAL_HOST_ADDR, port))
+        address = DEFAULT_APP_ADDRESS
+        result = s.connect_ex((DEFAULT_APP_ADDRESS, int(port)))
+    elif port is None and address is not None:
+        port = DEFAULT_APP_PORT
+        result = s.connect_ex((address, DEFAULT_APP_PORT))
     else:
-        result = s.connect_ex((LOCAL_HOST_ADDR, port))
+        address = DEFAULT_APP_ADDRESS
+        result = s.connect_ex((DEFAULT_APP_ADDRESS, int(port)))
 
-    if result != 0:
+    if result == 0:
         s.close()
         msg = '%s port is already used' % str(port)
-        logger(msg)
+        logger.error(msg)
         raise mfs_exceptions.PortUsageError(msg)
 
 
 def resolv_check(config_obj):
 
-    master_host = config_obj.get('moose_options', 'master_host')
+    # Addresses validation
+    ip_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+    name_pattern = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
-    # Check whether master host resolves
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    address_for_valid = {'general': 'host', 'moose_options': 'master_host'}
 
-    if (allowed.match(x) for x in master_host.split(".")):
-        try:
-            socket.gethostbyname('master_host')
-        except Exception:
-            msg = "%s doesn't resolve" % str(master_host)
-            logger(msg)
-            raise mfs_exceptions.HostResolveError(msg)
+    if config_obj.get('general', 'host') is not None:
+        for i in address_for_valid:
+            if not ip_pattern.match(config_obj.get(i, address_for_valid[i])):
+                if not name_pattern.match(config_obj.get(i, address_for_valid[i])):
+                    msg = '%s address is not valid in %s section.' % (address_for_valid[i], i)
+                    logger.error(msg)
+                    raise mfs_exceptions.AddressValidError(msg)
+                else:
+                    try:
+                        socket.gethostbyname(config_obj.get(i, address_for_valid[i]))
+                    except Exception:
+                        msg = "%s doesn't resolve" % str(config_obj.get(i, address_for_valid[i]))
+                        logger.error(msg)
+                        raise mfs_exceptions.HostResolveError(msg)
 
     # Check whether master address is valid
+    master_host = config_obj.get('moose_options', 'master_host')
     responce = os.system("ping -c 1 " + master_host)
 
     if responce != 0:
