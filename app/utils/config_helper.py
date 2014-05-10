@@ -83,8 +83,19 @@ def directives_check(config_obj):
             raise mfs_exceptions.InvalidKeyFile(msg)
 
     # Check whether backup path exists
-    if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
-        msg = 'Backup folder %s is not exists' % config_obj.get('moose_options', 'backup_path')
+    try:
+        if config_obj.get('moose_options', 'backup_path') is None:
+            if not os.path.isdir(DEFAULT_BACKUP_PATH):
+                os.mkdirs(DEFAULT_BACKUP_PATH)
+                msg = 'Backup folder %s is not exists. Creating default backup folder...'
+                logger(msg)
+        else:
+            if not os.path.isdir(config_obj.get('moose_options', 'backup_path')):
+                msg = 'Backup folder %s is not exists. Creating backup folder...' % config_obj.get('moose_options','backup_path')
+                os.mkdirs(config_obj.get('moose_options', 'backup_path'))
+                logger(msg)
+    except Exception:
+        msg = 'Error during backup folder creation'
         logger(msg)
         raise mfs_exceptions.BackupPathError(msg)
 
