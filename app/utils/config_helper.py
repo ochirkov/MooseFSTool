@@ -36,10 +36,8 @@ def config_parser(section):
     else:
         config.read(path)
 
-    sections_check(config)
-    directives_check(config)
-    network_check(config)
-    resolv_check(config)
+    for i in (sections_check, directives_check, network_check, resolv_check):
+        i(config)
 
     return dict((x, y) for x, y in config.items(section))
 
