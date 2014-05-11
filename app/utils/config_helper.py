@@ -42,7 +42,7 @@ def config_parser(section):
 
 
 def sections_check(config_obj):
-    for i in ('general', 'moose_options', 'ssh_options'):
+    for i in ('moose_options', 'ssh_options'):
         if not config_obj.has_section(i):
             msg = '%s section is missing. This section is required' % str(i)
             logger.error(msg)
@@ -150,5 +150,8 @@ def resolv_check(config_obj):
 
 ssh_options = config_parser('ssh_options')
 moose_options = config_parser('moose_options')
-general = config_parser('general')
+try:
+    general = config_parser('general')
+except Exception:
+    general = {'host': '0.0.0.0', 'port': '5001', 'debug': 'False'}
 
