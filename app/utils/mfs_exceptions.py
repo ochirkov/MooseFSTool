@@ -22,6 +22,9 @@ class ConfigsException(MooseError):
 class MetafilesException(MooseError):
     pass
 
+class MFSMountException(MooseError):
+    pass
+
 class SectionMissing(ConfigsException):
     pass
 
