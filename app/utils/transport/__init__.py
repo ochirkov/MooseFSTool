@@ -192,4 +192,4 @@ class Connect(object):
         """
         Close sftp session with remote host.
         """
-
+        self.remote.close()
