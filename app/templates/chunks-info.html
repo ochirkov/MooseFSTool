@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+{% block body %}
+	<h3>{{ page_title }}</h3>
+	<div class="row-fluid">
+		{% if errors %}
+			<div class="alert alert-error">
+				{% for error in errors %}
+					{{ error|safe }}
+				{% endfor %}
+			</div>
+		{% else %}
+			<table class="table zebra-striped">
+				<tr>
+					<th>No</th>
+					<th>IP</th>
+					<th>Hostname</th>
+				</tr>
+				{% for server in servers %}
+					<tr>
+						<td>{{ loop.index }}</td>
+						<td>{{ server.ip }}</td>
+						<td>{{ server.host }}</td>
+					</tr>
+				{% endfor %}
+			</table>
+		{% endif %}
+	</div>
+{% endblock %}

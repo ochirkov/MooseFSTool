@@ -1,18 +1,28 @@
 from flask import render_template, redirect, request, url_for
 from app import app
 from app.decorators import login_required
-from app.utils.config_helper import moose_options
+from app.utils.config_helper import moose_options, mfs_exceptions, DEFAULT_MFSMASTER_PORT
 from app.utils.moose_lib import MooseFS
-
 
 
 @app.route('/clients', methods = ['GET', 'POST'])
 @login_required
 def clients():
-    clients = [{'ip':'192.168.56.13' + str(i),
-                    'name' : 'client',
-                    'status' : 'ok' if i%2==0 else 'dead'} for i in range(10)]
-    return render_template('servers-info.html',
+    host = moose_options.get('master_host', '')
+    port = moose_options.get('master_port', DEFAULT_MFSMASTER_PORT)
+    clients, errors = [], []
+    try:
+        mfs = MooseFS(masterhost=host,
+                      masterport=int(port))
+    except mfs_exceptions.MooseConnectionFailed as e:
+        errors.append("Failed to connect to mfsmaster.\n%s" % e)
+    except Exception as e:
+        errors.append('Failed to connect to %s:%s.\n%s' % (host, port, e))
+    # available keys: host, ip, mount_point, mfsmount_root
+    else:
+        clients = mfs.mfs_mounts()
+    return render_template('clients-info.html',
                            servers = clients,
+                           errors = errors,
                            title = 'Clients')
     

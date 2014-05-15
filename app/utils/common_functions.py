@@ -3,8 +3,9 @@ author       :  Anastasiia Panchenko
 creation date:  27/04/2014
 
 Provides functions that are used several times.
-This module should be changed, I think.
 """
+
+import re
 
 def nl2br(text):
     """

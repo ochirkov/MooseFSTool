@@ -2,9 +2,9 @@
 {% block body %}
 	<div class="row-fluid">
 		{% if errors.mount %}
-		<div class="alert alert-error">
-			{{ errors.mount|safe }}
-		</div>
+			<div class="alert alert-error">
+				{{ errors.mount|safe }}
+			</div>
 		{% else %}
 			{% if tree %}
 				<div class="span6">

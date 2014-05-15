@@ -344,7 +344,6 @@ class MooseFS():
                     metaloggers.append({ 'host': host,
                                          'ip':   ip
                                 })
-                    return metaloggers
             else:
                 msg = 'Error during metaloggers list obtainig. Check master version, it could be obsolite'
                 logger.error(msg)
@@ -357,6 +356,7 @@ class MooseFS():
 
         finally:
             s.close()
+            return metaloggers
 
 
     def mfs_mounts(self):

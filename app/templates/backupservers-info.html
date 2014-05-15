@@ -5,16 +5,14 @@
 		<table class="table zebra-striped">
 			<tr>
 				<th>No</th>
-				<th>Status</th>
 				<th>IP</th>
 				<th>Hostname</th>
 			</tr>
 			{% for server in servers %}
 				<tr>
 					<td>{{ loop.index }}</td>
-					<td><span class="label {% if server.status == 'ok' %}label-success{% else %}label-important{% endif %}">{{ server.status }}</span></td>
 					<td>{{ server.ip }}</td>
-					<td>{{ server.name }}{{ loop.index }}</td>
+					<td>{{ server.host }}</td>
 				</tr>
 			{% endfor %}
 		</table>

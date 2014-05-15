@@ -3,7 +3,7 @@ from app import app
 from app.forms import BackupForm
 from app.decorators import login_required
 from app.utils import mfs_exceptions, transport, moose_lib, \
-                      backup_helper, useful_functions
+                      backup_helper, common_functions
 from app.utils.log_helper import logger
 from app.utils.config_helper import moose_options, DEFAULT_META_PATH, \
                                     DEFAULT_CONFIGS_PATH, DEFAULT_MFSMASTER_PORT, \
@@ -27,16 +27,17 @@ def master():
     configs_info, meta_info, mfsmaster_info, backup_form = (None,)*4
     errors = []
     host = moose_options.get('master_host', '')
+    port = moose_options.get('master_port', DEFAULT_MFSMASTER_PORT)
     try:
         con = transport.Connect(host)
     except mfs_exceptions.MooseConnectionFailed as e:
-        errors.append(useful_functions.nl2br(str(e)))
+        errors.append(common_functions.nl2br(str(e)))
     else:
         backup_form = BackupForm(request.form)
         
         configs_info = get_configs_info(con)
         configs_path = configs_info['configs_path']
-        mfsmaster_info = get_mfsmaster_info(con, host, configs_path)
+        mfsmaster_info = get_mfsmaster_info(con, host, port, configs_path)
         meta_path = mfsmaster_info['meta_path']
         meta_info = get_meta_info(meta_path, con, configs_path)
         
@@ -86,7 +87,7 @@ def get_value_by_key(key, content):
         return None
 
 
-def get_mfsmaster_info(connection, host, configs_path):
+def get_mfsmaster_info(connection, host, port, configs_path):
     """
     returns some of mfsmaster options in a dictionary
     or gives default values, asigned in this module
@@ -94,7 +95,7 @@ def get_mfsmaster_info(connection, host, configs_path):
     errors = []
     mfsmaster_cfg_path = os.path.join(configs_path, CONFIGS[0])
     meta_path = meta_path = moose_options.get('meta_path', '')
-    port, version = '', ''
+    version = ''
     
     try:
         mfsmaster_cfg = connection.get_file(mfsmaster_cfg_path, 'r')
@@ -105,14 +106,10 @@ def get_mfsmaster_info(connection, host, configs_path):
         lines = mfsmaster_cfg.readlines()
         if not meta_path:
             meta_path = get_value_by_key('DATA_PATH', lines)
-        port = get_value_by_key('MATOCL_LISTEN_PORT', lines)
         mfsmaster_cfg.close()
     
     if not meta_path:
          meta_path = DEFAULT_META_PATH
-    
-    if not port:
-        port = DEFAULT_MFSMASTER_PORT
     
     version = get_master_version(host, port)
     if not isinstance(version, tuple):
