@@ -1,4 +1,21 @@
 {% extends 'main.html' %}
 {% block body %}
-	{{ servers }}
+		<h3>{{ page_title }}</h3>
+	<div class="row-fluid">
+		{% if errors %}
+			<div class="alert alert-error">
+				{% for error in errors %}
+					{{ error|safe }}
+				{% endfor %}
+			</div>
+		{% else %}
+			{% if servers %}
+				{% include servers_table %}
+			{% else %}
+				<div class="alert alert-error">
+					No servers found.
+				</div>
+			{% endif %}
+		{% endif %}
+	</div>
 {% endblock %}
