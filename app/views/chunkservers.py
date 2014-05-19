@@ -1,15 +1,24 @@
 from flask import render_template, redirect, request, url_for, jsonify
 from app import app
 from app.decorators import login_required
+from app.utils.common_functions import mfs_object
 
 
 @app.route('/chunkservers', methods = ['GET', 'POST'])
 @login_required
 def chunkservers():
-    chunkservers = [{'ip':'192.168.56.13' + str(i),
-                    'name' : 'chunkserver',
-                    'status' : 'ok' if i%2==0 else 'dead'} for i in range(10)]
-    return render_template('servers-info.html',
+    mfs_obj = mfs_object()
+    mfs = mfs_obj['mfs']
+    errors = mfs_obj['errors']
+    chunkservers = []
+    try:
+        # available keys: host, ip
+        chunkservers = mfs.mfs_servers()
+    except Exception as e:
+        errors.append("Chunkservers error: %s" % str(e))
+    return render_template('servers.html',
+                           servers_table = 'chunkservers-table.html',
                            servers = chunkservers,
+                           errors = errors,
                            title = 'Chunkservers')
 

@@ -1,0 +1,20 @@
+<table class="table zebra-striped sorted-table" style="cursor: hand">
+	<thead>
+		<tr>
+			<th>No</th>
+			<th>IP</th>
+			<th>Hostname</th>
+			<th>Mount Point</th>
+			<th>MFSMount Root</th>
+		</tr>
+	</thead>
+	{% for server in servers %}
+	<tr>
+		<td>{{ loop.index }}</td>
+		<td>{{ server.ip }}</td>
+		<td>{{ server.host }}</td>
+		<td>{{ server.mount_point }}</td>
+		<td>{{ server.mfsmount_root }}</td>
+	</tr>
+	{% endfor %}
+</table>

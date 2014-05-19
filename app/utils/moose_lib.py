@@ -43,7 +43,7 @@ class MooseFS():
 
     """
 
-    def __init__(self, masterhost='mfsmaster', masterport=9421):
+    def __init__(self, masterhost, masterport):
         self.masterhost = masterhost
         self.masterport = int(masterport)
         self.masterversion = self.check_master_version()
@@ -293,7 +293,6 @@ class MooseFS():
                         host = "(unresolved)"
                         msg = 'Error during server hostname getting %s' % str(e)
                         logger.error(msg)
-                        raise mfs_exceptions.MooseError(msg)
 
                     servers.append({
                             'host':           host,
@@ -344,7 +343,6 @@ class MooseFS():
                     metaloggers.append({ 'host': host,
                                          'ip':   ip
                                 })
-                    return metaloggers
             else:
                 msg = 'Error during metaloggers list obtainig. Check master version, it could be obsolite'
                 logger.error(msg)
@@ -357,6 +355,7 @@ class MooseFS():
 
         finally:
             s.close()
+            return metaloggers
 
 
     def mfs_mounts(self):
@@ -407,4 +406,5 @@ class MooseFS():
 
         finally:
             s.close()
+            return clients
 

@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for
 from app import app
-from app.utils import transport, config_helper, mfs_exceptions, useful_functions
+from app.utils import transport, config_helper, mfs_exceptions, common_functions
 from app.utils.log_helper import logger
 from app.decorators import login_required
 from app.views.data import make_remote_tree, isdir
@@ -45,10 +45,10 @@ def trash():
                             "Got the following error: %s" % stderr)
 
     except mfs_exceptions.MooseConnectionFailed as e:
-        errors['connection'] = useful_functions.nl2br(str(e))
+        errors['connection'] = common_functions.nl2br(str(e))
     
     except mfs_exceptions.MFSMountException as e:
-        errors['mount'] = (useful_functions.nl2br(str(e)), )
+        errors['mount'] = (common_functions.nl2br(str(e)), )
     
     else:
         trash_path = os.path.join(trash_path, 'trash')
