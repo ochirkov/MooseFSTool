@@ -101,6 +101,13 @@ img.bordered:hover, img.bordered:focus {
 	cursor: pointer;
 }
 
+img.icon-small {
+	margin: 0 2px 0 2px;
+	width: auto;
+	height: auto;
+	float: left;
+}
+
 .tabbable {
 	width: 500px;;
 }

@@ -1,60 +1,121 @@
 {% extends 'main.html' %}
 {% block body %}
-	<div class="row-fluid">
-		<h3>Servers diagram</h3>
-	</div>
-	{% if errors %}
-		<div class="alert alert-error">
-			{% for error in errors %}
-				{{ error|safe }}<br/>
-			{% endfor %}
-		</div>
-	{% endif %}
-	<div class="row">
-		<div class="span10">
-			<div class="row-fluid">
-				<div class="span12 center">
-					<a href="{{ url_for('metaloggers') }}"><strong>Metaloggers: {{ metaloggers|length }}</strong></a><br/>
-					{% if metaloggers %}
-						{% set image_name = 'img/diagramm/metalogger.png' %}
-						{% with servers = metaloggers %}
-							{% include 'servers-item.html' %}
-						{% endwith %}
-					{% endif %}
-				</div>
+<div class="row-fluid">
+	<h3>MooseFS Servers</h3>
+</div>
+{% if errors %}
+<div class="alert alert-error">
+	{% for error in errors %}
+	{{ error|safe }}
+	<br/>
+	{% endfor %}
+</div>
+{% else %}
+<div class="row">
+	<table class="table table-bordered" style="cursor: hand">
+		<thead>
+			<tr>
+				<th>Type</th>
+				<th>Items</th>
+			</tr>
+		</thead>
+		<tr>
+			<td>Master</td>
+			<td><img src="{{ url_for('static', filename='img/diagramm/master-small.ico') }}" class="icon-small"/>
+			<p>
+				{{ master_host }}
+			</p>
+			<p>
+				{{ master_ip }}
+			</p></td>
+		</tr>
+
+		{% set image_name = 'img/diagramm/metalogger-small.ico' %}
+		{% set servers_url = 'metaloggers' %}
+		{% set servers_name = 'Metaloggers' %}
+		{% with servers = metaloggers %}
+		{% include 'servers-item.html' %}
+		{% endwith %}
+
+		{% set image_name = 'img/diagramm/chunkserver-small.ico' %}
+		{% set servers_url = 'chunkservers' %}
+		{% set servers_name = 'Chunkservers' %}
+		{% with servers = chunkservers %}
+		{% include 'servers-item.html' %}
+		{% endwith %}
+
+		{% set image_name = 'img/diagramm/client-small.ico' %}
+		{% set servers_url = 'clients' %}
+		{% set servers_name = 'Clients' %}
+		{% with servers = clients %}
+		{% include 'servers-item.html' %}
+		{% endwith %}
+
+	<!-- <div class="span10">
+		<div class="row-fluid">
+			<div class="span12 center">
+				<a href="{{ url_for('metaloggers') }}"><strong>Metaloggers: {{ metaloggers|length }}</strong></a>
+				<br/>
+				{% if metaloggers %}
+				{% set image_name = 'img/diagramm/metalogger.png' %}
+				{% with servers = metaloggers %}
+				{% include 'servers-item.html' %}
+				{% endwith %}
+				{% endif %}
 			</div>
-			<div class="row-fluid">
-				<div class="span3">
-					<div class="inline">
-						<div style="text-align:center">
-							<a href="{{ url_for('master') }}"><strong>Master</strong></a><br/>
-							<img src="{{ url_for('static', filename='img/diagramm/master.png') }}" width=60 class="bordered"/>
-							<p>{{ master_host }}</p>
-							<p>{{ master_ip }}</p>
-						</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span3">
+				<div class="inline">
+					<div style="text-align:center">
+						<a href="{{ url_for('master') }}"><strong>Master</strong></a>
+						<br/>
+						<img src="{{ url_for('static', filename='img/diagramm/master.png') }}" width=60 class="bordered"/>
+						<p>
+							{{ master_host }}
+						</p>
+						<p>
+							{{ master_ip }}
+						</p>
 					</div>
 				</div>
-				<div class="span8 offset1 center">
-					<a href="{{ url_for('chunkservers') }}"><strong>Chunkservers: {{ chunkservers|length }}</strong></a><br/>
-					{% if chunkservers %}
-						{% set image_name = 'img/diagramm/chunkserver.png' %}
-						{% with servers = chunkservers %}
-							{% include 'servers-item.html' %}
-						{% endwith %}
-					{% endif %}
-				</div>
 			</div>
-			<div class="row-fluid">
-				<div class="span10 center">
-					<a href="{{ url_for('clients') }}"><strong>Clients: {{ clients|length }}</strong></a><br/>
-					{% if clients %}
-						{% set image_name = 'img/diagramm/client.png' %}
-						{% with servers = clients %}
-							{% include 'servers-item.html' %}
-						{% endwith %}
-					{% endif %}
-				</div>
+			<div class="span8 offset1 center">
+				<a href="{{ url_for('chunkservers') }}"><strong>Chunkservers: {{ chunkservers|length }}</strong></a>
+				<br/>
+				{% if chunkservers %}
+				{% set image_name = 'img/diagramm/chunkserver.png' %}
+				{% with servers = chunkservers %}
+				{% include 'servers-item.html' %}
+				{% endwith %}
+				{% endif %}
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span10 center">
+				<a href="{{ url_for('clients') }}"><strong>Clients: {{ clients|length }}</strong></a>
+				<br/>
+				{% if clients %}
+				{% set image_name = 'img/diagramm/client.png' %}
+				{% with servers = clients %}
+				{% include 'servers-item.html' %}
+				{% endwith %}
+				{% endif %}
 			</div>
 		</div>
 	</div>
+</div> -->
+
+
+<!-- {% for server in metaloggers[0:4] %}
+	<div class="inline">
+		<img src="{{ url_for('static', filename=image_name) }}" width=50 class="bordered"/>
+		<p>{{ server.host }}<br/>{{ server.ip }}</p>
+	</div>
+{% endfor %}
+	<div class="inline">
+		{% if servers|length > 4 %}<h3>...</h3>{% endif %}
+	</div> -->
+
+{% endif %}
 {% endblock %}

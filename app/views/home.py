@@ -19,22 +19,25 @@ def home():
     mfs_obj = mfs_object()
     mfs = mfs_obj['mfs']
     errors = mfs_obj['errors']
+    master_host = ''
     clients, metaloggers, chunkservers = [], [], []
-    try:
-        clients = mfs.mfs_mounts()
-    except Exception as e:
-        errors.append("Clients error: %s" % str(e))
-    try:
-        metaloggers = mfs.mfs_backup_servers()
-    except Exception as e:
-        errors.append("Metaloggers error: %s" % str(e))
-    try:
-        chunkservers = mfs.mfs_servers()
-    except Exception as e:
-        errors.append("Chunkservers error: %s" % str(e))
+    if mfs:
+        master_host = mfs.masterhost
+        try:
+            clients = mfs.mfs_mounts()
+        except Exception as e:
+            errors.append("Clients error: %s" % str(e))
+        try:
+            metaloggers = mfs.mfs_backup_servers()
+        except Exception as e:
+            errors.append("Metaloggers error: %s" % str(e))
+        try:
+            chunkservers = mfs.mfs_servers()
+        except Exception as e:
+            errors.append("Chunkservers error: %s" % str(e))
 
     return render_template('home.html',
-                           master_host = mfs.masterhost,
+                           master_host = master_host,
                            metaloggers = metaloggers,
                            chunkservers = chunkservers,
                            clients = clients,

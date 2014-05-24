@@ -29,6 +29,6 @@ def mfs_object():
         errors.append('Error while trying to connect to %s:%s<br/>%s' % (master_host,
                                                                          master_port, e))
     except Exception as e:
-        errors.append(str(e))
+        errors.append("Master error: %s" % str(e))
     result['errors'] = errors
     return result
