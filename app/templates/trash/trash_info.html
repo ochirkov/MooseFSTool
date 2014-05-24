@@ -5,12 +5,21 @@
 {% else %}
 	<h5>{{ path }}</h5>
 	{% if paths %}
-		Choose the level to restore:<br/>
+		<h4>Choose the level to restore:</h4>
 		<table>
 			{% for p in paths %}
 				<tr>
-					<td>{{ p }}</td>
-					<td><a href="#" onclick="send_post(event, '{{ post_url }}', '{{ p }}', 'restore', '')" class="btn btn-mini">Restore</a></td>
+					<td>
+						{% if loop.last %}
+							<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
+						{% else %}
+							<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}" style="margin-left: 13px;"/>
+						{% endif %}
+						<span style="margin-right:5px;">{{ p }}</span>
+						</td>
+					<td>
+						<a href="#" onclick="send_post(event, '{{ post_url }}', '{{ p }}', 'restore', '')" class="btn btn-mini"><i class="icon icon-share-alt"></i>Restore</a>
+					</td>
 				</tr>
 			{% endfor %}
 		</table>

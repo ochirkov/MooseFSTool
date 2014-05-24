@@ -37,12 +37,11 @@ def trash():
         # 0 - is mounted, 1 - is NOT mounted
         mount_code = con.remote_command('/bin/mountpoint %s' % trash_path, 'code')
         if mount_code:
-            stdout, stderr = con.remote_command('/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path, 'std')
-            # Here are weird errors which I don't understand, but path is mounted successfully
-            if stderr:
+            ret_code = con.remote_command('/usr/bin/mfsmount %s -H mfsmaster -o mfsmeta' % trash_path, 'code')
+            if ret_code:
                 raise mfs_exceptions.MFSMountException(
                             "Couldn't mount trash path %s.\n" % trash_path + \
-                            "Got the following error: %s" % stderr)
+                            "Got the following error code: %s" % ret_code)
 
     except mfs_exceptions.MooseConnectionFailed as e:
         errors['connection'] = common_functions.nl2br(str(e))

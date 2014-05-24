@@ -43,12 +43,12 @@ def data():
         # 0 - is mounted, 1 - is NOT mounted
         mount_code = con.remote_command('/bin/mountpoint %s' % data_path, 'code')
         if mount_code:
-            stdout, stderr = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'std')
-            # Here are weird errors which I don't understand, but path is mounted successfully
-            if stderr:
+            ret_code = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'code')
+            # 0 - correct command; not 0 - command with errors
+            if ret_code:
                 raise mfs_exceptions.MFSMountException(
                             "Couldn't mount data path %s.\n" % data_path + \
-                            "Got the following error: %s" % stderr)
+                            "Got the following return code: %s" % ret_code)
 
     except mfs_exceptions.MooseConnectionFailed as e:
         errors['connection'] = (useful_functions.nl2br(str(e)), )

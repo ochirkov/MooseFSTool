@@ -124,9 +124,9 @@ class Connect(object):
 
         ssh_client = self.ssh
         stdin, stdout, stderr = ssh_client.exec_command(cmd)
-
+        exit_code = stdout.channel.recv_exit_status()
         if return_value == 'code':
-            return stdout.channel.recv_exit_status()
+            return exit_code
         elif return_value == 'std':
             return stdout, stderr
     
