@@ -10,10 +10,13 @@
 			{% for p in paths %}
 				<tr>
 					<td>
+						{% for i in range(1,loop.index) %}&nbsp;&nbsp;&nbsp;{% endfor %} <!-- level's indents -->
 						{% if loop.last %}
-							<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 13px;"/>
+							<img src="{{ url_for('static', filename='img/tree/small-file.png') }}" style="margin: 0px 3px 0px 21px;"/>
 						{% else %}
-							<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}" style="margin-left: 13px;"/>
+							
+							<img src="{{ url_for('static', filename='img/tree/small-minus.png') }}"/>
+							<img src="{{ url_for('static', filename='img/tree/small-folder.png') }}"/>
 						{% endif %}
 						<span style="margin-right:5px;">{{ p }}</span>
 						</td>
