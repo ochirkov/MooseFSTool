@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for, jsonify
 from app import app
-from app.utils import transport, config_helper, mfs_exceptions, useful_functions
+from app.utils import transport, config_helper, mfs_exceptions, common_functions
 from app.utils.log_helper import logger
 from app.decorators import login_required
 from stat import S_ISDIR
@@ -43,18 +43,18 @@ def data():
         # 0 - is mounted, 1 - is NOT mounted
         mount_code = con.remote_command('/bin/mountpoint %s' % data_path, 'code')
         if mount_code:
-            stdout, stderr = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'std')
-            # Here are weird errors which I don't understand, but path is mounted successfully
-            if stderr:
+            ret_code = con.remote_command('/usr/bin/mfsmount %s' % data_path, 'code')
+            # 0 - correct command; not 0 - command with errors
+            if ret_code:
                 raise mfs_exceptions.MFSMountException(
                             "Couldn't mount data path %s.\n" % data_path + \
-                            "Got the following error: %s" % stderr)
+                            "Got the following return code: %s" % ret_code)
 
     except mfs_exceptions.MooseConnectionFailed as e:
-        errors['connection'] = (useful_functions.nl2br(str(e)), )
+        errors['connection'] = (common_functions.nl2br(str(e)), )
     
     except mfs_exceptions.MFSMountException as e:
-        errors['mount'] = (useful_functions.nl2br(str(e)), )
+        errors['mount'] = (common_functions.nl2br(str(e)), )
     
     else:
         tree = make_remote_tree(con, data_path)

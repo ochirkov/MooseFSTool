@@ -1,38 +1,40 @@
 {% extends 'main.html' %}
 {% block body %}
 	<div class="row-fluid">
-		{% if errors %}
-			<div class="alert alert-error">
-				{% for k in errors %}
-					{{ k }} error:<br/>
-					{% for e in errors[k] %}
-						{{ e|safe }}<br/>
+		<div class="span6">
+			<h3>{{ path }}</h3>
+			{% if errors %}
+				<div class="alert alert-error">
+					{% for k in errors %}
+						{{ k }} error:<br/>
+						{% for e in errors[k] %}
+							{{ e|safe }}<br/>
+						{% endfor %}
 					{% endfor %}
-				{% endfor %}
-			</div>
-		{% else %}
-			{% if tree %}
-				<div class="span6">
-					<h3>{{ path }}</h3>
-					{% include 'data/files_tree.html' %}
 				</div>
-				<div class="span6">
-					<div style="position:fixed">
-						<h3>MFS info
-							<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading_big.gif') }}" class="hidden" width=30/>
-						</h3>
-						<div id="get_info_div">
-							<div class="alert alert-success">
-								Click on filename to get mfs info about it.
-							</div>
+			{% else %}
+				{% if tree %}
+					{% include 'data/files_tree.html' %}
+				{% else %}
+					<div class="alert alert-error">
+						{{ path }} dirrectory is empty
+					</div>
+				{% endif %}
+			{% endif %}
+		</div>
+		{% if not errors and tree %}
+			<div class="span6">
+				<div style="position:fixed">
+					<h3>MFS info
+						<img id="loading_info" src="{{ url_for('static', filename='img/tree/loading_big.gif') }}" class="hidden" width=30/>
+					</h3>
+					<div id="get_info_div">
+						<div class="alert alert-success">
+							Click on filename to get mfs info about it.
 						</div>
 					</div>
 				</div>
-			{% else %}
-				<div class="alert alert-error">
-					{{ path }} dirrectory is empty
-				</div>
-			{% endif %}
+			</div>
 		{% endif %}
 	</div>
 {% endblock %}

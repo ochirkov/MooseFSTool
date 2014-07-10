@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for
 from app import app
-from app.utils import transport, config_helper, mfs_exceptions, useful_functions
+from app.utils import transport, config_helper, mfs_exceptions, common_functions
 from app.decorators import login_required
 from app.utils.log_helper import LOG_PATH, LOG_APP_LABEL, LOG_MFS_LABEL
 
@@ -71,7 +71,7 @@ def get_mfs_log():
                                  LOG_APP_LABEL not in x , log.readlines())
         return lines
     except mfs_exceptions.MooseConnectionFailed as e:
-        return useful_functions.nl2br(str(e))
+        return common_functions.nl2br(str(e))
     except Exception as e:
         return "Couldn't open remote file %s on host %s<br/>%s" % (LOG_PATH, host, e)
             

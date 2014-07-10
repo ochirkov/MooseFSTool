@@ -11,11 +11,9 @@ def chunkservers():
     mfs = mfs_obj['mfs']
     errors = mfs_obj['errors']
     chunkservers = []
-    try:
+    if mfs:
         # available keys: host, ip
         chunkservers = mfs.mfs_servers()
-    except Exception as e:
-        errors.append("Chunkservers error: %s" % str(e))
     return render_template('servers.html',
                            servers_table = 'chunkservers-table.html',
                            servers = chunkservers,
