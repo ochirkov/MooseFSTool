@@ -5,10 +5,8 @@
 		{% if loop.first %}<td rowspan="{% if servers|length < 4 %}{{ servers|length }}{% else %}{{ max_length + 1 }}{% endif %}">
 			<a href="{{ url_for(servers_url) }}">{{ servers_name }}</a></td>
 		{% endif %}
-		<td>
-			<img src="{{ url_for('static', filename=image_name) }}" class="icon-small"/>
-			{{ server.host }} {{ server.ip }}
-		</td>
+		<td>{{ server.host }}</td>
+		<td>{{ server.ip }}</td>
 	</tr>
 {% endfor %}
 {% if servers|length > max_length %}

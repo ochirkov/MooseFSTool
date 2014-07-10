@@ -16,18 +16,14 @@
 		<thead>
 			<tr>
 				<th>Type</th>
-				<th>Items</th>
+				<th>Hostname</th>
+				<th>IP</th>
 			</tr>
 		</thead>
 		<tr>
 			<td><a href="{{ url_for('master') }}">Master</a></td>
-			<td><img src="{{ url_for('static', filename='img/diagramm/master-small.ico') }}" class="icon-small"/>
-			<p>
-				{{ master_host }}
-			</p>
-			<p>
-				{{ master_ip }}
-			</p></td>
+			<td>{{ master_hostname }}</td>
+			<td>{{ master_ip }}</td>
 		</tr>
 
 		{% set image_name = 'img/diagramm/metalogger-small.ico' %}

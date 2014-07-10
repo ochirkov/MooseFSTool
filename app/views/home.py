@@ -19,10 +19,10 @@ def home():
     mfs_obj = mfs_object()
     mfs = mfs_obj['mfs']
     errors = mfs_obj['errors']
-    master_host = ''
+    master_ip = ''
     clients, metaloggers, chunkservers = [], [], []
     if mfs:
-        master_host = mfs.masterhost
+        master_ip = mfs.masterhost
         try:
             clients = mfs.mfs_mounts()
         except Exception as e:
@@ -37,7 +37,7 @@ def home():
             errors.append("Chunkservers error: %s" % str(e))
 
     return render_template('home.html',
-                           master_host = master_host,
+                           master_ip = master_ip,
                            metaloggers = metaloggers,
                            chunkservers = chunkservers,
                            clients = clients,
